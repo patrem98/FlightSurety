@@ -30,8 +30,8 @@ contract FlightSuretyApp {
     address private contractOwner;          // Account used to deploy contract
     FlightSuretyData flightSuretyData;  
 
-    uint256 constant M = 2;                                             // M = number of required addresses for consensus
-    address[] multiCalls = new address[](0);                            // Array of addresses to prevent multiple calls of the same address (short array only --> lockout bug thru gaslimit!)
+    uint256 private constant VOTING_THRESHOLD;                                            
+    address[] multiCalls = new address[](0);           
     
     struct Flight {
         bool isRegistered;
@@ -79,34 +79,12 @@ contract FlightSuretyApp {
         _;
     }
 
-    /** 
-    * @dev Modifier that implements multi-party consensus to execute a specific function
-    */
-    modifier requireMultiPartyConsensus()
-    {
-        bool isDuplicate = false;
-        for(uint c=0; c<multiCalls.length; c++) {
-            if (multiCalls[c] == msg.sender) {
-                isDuplicate = true;
-                break;
-            }
-        }
-        require(!isDuplicate, "Caller has already called this function.");
-
-        multiCalls.push(msg.sender);
-        if (multiCalls.length >= M) {
-            operational = mode;      
-            multiCalls = new address[](0);      
-        }
-        _;
-    }
-
     /********************************************************************************************/
 
     /**
     * @dev Event to mark registered Airlines
     */
-    event AirlineRegistered(bool success, uint256 votes); //? --> votes not necessary, because of Multipartyconsensus (?)
+    event AirlineRegistered(address addressAirline, string nameAirline); 
 
     /**
     * @dev Event to mark registerd Flights
@@ -161,17 +139,31 @@ contract FlightSuretyApp {
                                 string nameAirline 
                             )
                             external
-                            requireMultiPartyConsensus
-                            returns(bool success, uint256 votes)
+                            //returns(bool success, uint256 votes)
     {
         if(flightSuretyData.numberRegisteredAirlines() < NUMBER_AIRLINES_THRESHOLD) {
 
         flightSuretyData.registerAirline(addressAirline, nameAirline);
-        emit AirlineRegistered();
+        emit AirlineRegistered(addressAirline, nameAirline);
 
         }
         else {
+                bool isDuplicate = false;
+                for(uint c=0; c<multiCalls.length; c++) {
+                    if (multiCalls[c] == msg.sender) {
+                        isDuplicate = true;
+                        break;
+                    }
+                }
+                require(!isDuplicate, "Caller has already called this function.");
 
+                multiCalls.push(msg.sender);
+                if (multiCalls.length.div(flightSuretyData.numberRegisteredAirlines()).mul(100) >= VOTING_THRESHOLD) {
+                    flightSuretyData.registerAirline(addressAirline, nameAirline);  
+                    emit AirlineRegistered(addressAirline, nameAirline);    
+                    multiCalls = new address[](0);      
+                }
+            }
         }
 
         //return (success, 0);
