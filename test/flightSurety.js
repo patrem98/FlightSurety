@@ -22,6 +22,8 @@ contract('Flight Surety Tests', async (accounts) => {
 
   });
 
+  //ADD - TEST FOR PREVENTING LOCKOUT BUG!!!
+
   it(`(multiparty) can block access to setOperatingStatus() for non-Contract Owner account`, async function () {
 
       // Ensure that access is denied for non-Contract Owner account
@@ -36,6 +38,31 @@ contract('Flight Surety Tests', async (accounts) => {
       assert.equal(accessDenied, true, "Access not restricted to Contract Owner");
             
   });
+
+  /*it('function call is made when multi-party threshold is reached', async () => {
+    
+    // ARRANGE
+    let admin1 = accounts[1];
+    let admin2 = accounts[2];
+    let admin3 = accounts[3];
+    
+    await config.exerciseC6A.registerUser(admin1, true, {from: config.owner});
+    await config.exerciseC6A.registerUser(admin2, true, {from: config.owner});
+    await config.exerciseC6A.registerUser(admin3, true, {from: config.owner});
+    
+    let startStatus = await config.exerciseC6A.isOperational.call(); 
+    let changeStatus = !startStatus;
+
+    // ACT
+    await config.exerciseC6A.setOperatingStatus(changeStatus, {from: admin1});
+    await config.exerciseC6A.setOperatingStatus(changeStatus, {from: admin2});
+    
+    let newStatus = await config.exerciseC6A.isOperational.call(); 
+
+    // ASSERT
+    assert.equal(changeStatus, newStatus, "Multi-party call failed");
+
+  });*/
 
   it(`(multiparty) can allow access to setOperatingStatus() for Contract Owner account`, async function () {
 

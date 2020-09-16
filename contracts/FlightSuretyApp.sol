@@ -10,6 +10,7 @@ import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
 /* FlightSurety Smart Contract                      */
 /************************************************** */
 contract FlightSuretyApp {
+
     using SafeMath for uint256; // Allow SafeMath functions to be called for all uint256 types (similar to "prototype" in Javascript)
 
     /********************************************************************************************/
@@ -24,8 +25,14 @@ contract FlightSuretyApp {
     uint8 private constant STATUS_CODE_LATE_TECHNICAL = 40;
     uint8 private constant STATUS_CODE_LATE_OTHER = 50;
 
-    address private contractOwner;          // Account used to deploy contract
+    uint256 private constant NUMBER_AIRLINES_THRESHOLD = 4; 
 
+    address private contractOwner;          // Account used to deploy contract
+    FlightSuretyData flightSuretyData;  
+
+    uint256 constant M = 2;                                             // M = number of required addresses for consensus
+    address[] multiCalls = new address[](0);                            // Array of addresses to prevent multiple calls of the same address (short array only --> lockout bug thru gaslimit!)
+    
     struct Flight {
         bool isRegistered;
         uint8 statusCode;
@@ -36,7 +43,7 @@ contract FlightSuretyApp {
 
  
     /********************************************************************************************/
-    /*                                       FUNCTION MODIFIERS                                 */
+    /*                                       FUNCTION MODIFIERS & EVENTS                        */
     /********************************************************************************************/
 
     // Modifiers help avoid duplication of code. They are typically used to validate something
@@ -63,6 +70,49 @@ contract FlightSuretyApp {
         _;
     }
 
+    /**
+    * @dev Modifier that requires the "ContractOwner" account to be the function caller
+    */
+    modifier requireIsRegisteredAirline()
+    {
+        //require(msg.sender == contractOwner, "Caller is not contract owner");
+        _;
+    }
+
+    /** 
+    * @dev Modifier that implements multi-party consensus to execute a specific function
+    */
+    modifier requireMultiPartyConsensus()
+    {
+        bool isDuplicate = false;
+        for(uint c=0; c<multiCalls.length; c++) {
+            if (multiCalls[c] == msg.sender) {
+                isDuplicate = true;
+                break;
+            }
+        }
+        require(!isDuplicate, "Caller has already called this function.");
+
+        multiCalls.push(msg.sender);
+        if (multiCalls.length >= M) {
+            operational = mode;      
+            multiCalls = new address[](0);      
+        }
+        _;
+    }
+
+    /********************************************************************************************/
+
+    /**
+    * @dev Event to mark registered Airlines
+    */
+    event AirlineRegistered(bool success, uint256 votes); //? --> votes not necessary, because of Multipartyconsensus (?)
+
+    /**
+    * @dev Event to mark registerd Flights
+    */
+    event FlightRegistered(); //?
+
     /********************************************************************************************/
     /*                                       CONSTRUCTOR                                        */
     /********************************************************************************************/
@@ -73,11 +123,16 @@ contract FlightSuretyApp {
     */
     constructor
                                 (
+                                    address dataContract //address of deployed data contract ("FlightSuretyData")
                                 ) 
                                 public 
     {
         contractOwner = msg.sender;
+        flightSuretyData = FlightSuretyData(dataContract); //Initializing state variable
+        flightSuretyData.registerAirline(contractOwner, "contractOwnerAirline");
+        emit AirlineRegistered();
     }
+
 
     /********************************************************************************************/
     /*                                       UTILITY FUNCTIONS                                  */
@@ -102,12 +157,24 @@ contract FlightSuretyApp {
     */   
     function registerAirline
                             (   
+                                address addressAirline,
+                                string nameAirline 
                             )
                             external
-                            pure
+                            requireMultiPartyConsensus
                             returns(bool success, uint256 votes)
     {
-        return (success, 0);
+        if(flightSuretyData.numberRegisteredAirlines() < NUMBER_AIRLINES_THRESHOLD) {
+
+        flightSuretyData.registerAirline(addressAirline, nameAirline);
+        emit AirlineRegistered();
+
+        }
+        else {
+
+        }
+
+        //return (success, 0);
     }
 
 
@@ -119,7 +186,7 @@ contract FlightSuretyApp {
                                 (
                                 )
                                 external
-                                pure
+                                //pure
     {
 
     }
@@ -335,3 +402,12 @@ contract FlightSuretyApp {
 // endregion
 
 }   
+
+//Interface (reference) to FlighSuretyData contract
+
+contract FlightSuretyData {
+    function registerAirline(address addressAirline, string nameAirline) external;
+           
+
+
+}
