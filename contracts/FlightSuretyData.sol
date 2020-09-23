@@ -1,4 +1,4 @@
-pragma solidity ^0.4.25;
+pragma solidity >=0.4.25;
 
 import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
 
@@ -11,27 +11,25 @@ contract FlightSuretyData {
 
     struct Airline {
         bool isRegistered;
-        bool isParticipating; //true if registered airline submits funding of 10 ether
-        bool isAdmin;
+        bool isActive;                                                   //true if registered airline submits funding of 10 ether
         address addressAirline;
         string airlineName;
-
+        uint256 fund;
     }
     
     mapping(address => uint256) authorizedCallers;                      // To check that only App contract can call in!
 
     address private contractOwner;                                      // Account used to deploy contract
     bool private operational = true;                                    // Blocks all state changes throughout the contract if false
-    mapping(address => Airline) airlines;                               // Mapping for storing user profiles
-    //bool mode = 1;  ????
-    uint256 private registeredAirlines = 0; 
+    mapping(address => Airline) private airlines;                               // Mapping for storing user profiles
+    address[] airlineAccts = new address[](0); 
 
     uint256 constant M = 2;                                             // M = number of required addresses for consensus
     address[] multiCalls = new address[](0);                            // Array of addresses to prevent multiple calls of the same address (short array only --> lockout bug thru gaslimit!)
 
-    uint256 buyLimit = 600;                                             // 600 equals 10 times 60 seconds, meaning min 10 minutes between two function calls when buying!
-    uint256 private enabled = block.timestamp;                          // "Timer"-variable for Rate Limiting modifier
-    uint256 payoutLimit = 600;                                          // 600 equals 10 times 60 seconds, meaning min 10 minutes between two function calls when paying insurees!
+    //uint256 buyLimit = 600;                                             // 600 equals 10 times 60 seconds, meaning min 10 minutes between two function calls when buying!
+    //uint256 private enabled = block.timestamp;                          // "Timer"-variable for Rate Limiting modifier
+    //uint256 payoutLimit = 600;                                          // 600 equals 10 times 60 seconds, meaning min 10 minutes between two function calls when paying insurees!
 
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
@@ -110,13 +108,21 @@ contract FlightSuretyData {
 
     /** 
     * @dev Modifier that implements "Rate Limiting" as a payment protection pattern (in general limiting function calls when applied)
-    */
+    */ /*
     modifier rateLimit(uint256 time) {
         require(block.timestamp >= enabled, "Rate limiting in effect");
         enabled = enabled.add(time);
         _;
-    }
+    } */
 
+    /**
+    * @dev Modifier that requires the function caller to be a registered and participating (submitted funds) Airline
+    */
+    modifier requireIsAirline()
+    {
+        require(airlines[msg.sender].isRegistered && airlines[msg.sender].isActive, "Only registered and active airline can register new ones!");
+        _;
+    }
 
     /********************************************************************************************/
     /*                                       UTILITY FUNCTIONS                                  */
@@ -134,7 +140,6 @@ contract FlightSuretyData {
         delete authorizedCallers[dataContract];
     }
 
-
     /**
     * @dev Get operating status of contract
     *
@@ -148,7 +153,6 @@ contract FlightSuretyData {
         return operational;
     }
 
-
     /**
     * @dev Sets contract operations on/off
     *
@@ -156,7 +160,7 @@ contract FlightSuretyData {
     */    
     function setOperatingStatus
                             (
-                                
+                                bool mode
                             ) 
                             external
                             requireMultiPartyConsensus(mode)
@@ -164,19 +168,31 @@ contract FlightSuretyData {
                             // requireContractOwner --> After implementation of Multi-party consensus no longer valid/necessary
     {   
         require(mode != operational, "New mode must be different from existing mode");
-        require(airlines[msg.sender].isAdmin, "Caller is not an admin");
+        //require(airlines[msg.sender].isAdmin, "Caller is not an admin");
+    }
 
-        
+    /**
+    * @dev Gets specific element / address from airlines mapping!
+    */    
+    function getAirlines() view public returns(address[]) {
+        return airlineAccts;
     }
 
 
     /**
     * @dev Gets the amount of airlines already registered
     */    
-    function numberRegisteredAirlines() external isCallerAuthorized {
-        return registeredAirlines;
+    function numberRegisteredAirlines() external view  returns(uint256) {
+        return airlineAccts.length;
     }
 
+    /**
+    * @dev In order to access airlines from the FlightSuretyApp contract
+    */    
+    function IsAirlineActive (address addressAirline) external view returns(bool) {
+        //equire(addressAirline != address(0), "0x0 address not allowed!");
+        return airlines[addressAirline].isActive;
+    }   
 
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
@@ -193,56 +209,61 @@ contract FlightSuretyData {
                                 string nameAirline
                             )
                             external
-                            //pure
-                            requireMultiPartyConsensus(mode) 
+                            //requireMultiPartyConsensus(mode) 
                             isCallerAuthorized
+                            requireIsAirline
     {
         airlines[addressAirline] = Airline({
             isRegistered: true,
-            isParticipating: false,
-            isAdmin: false,
+            isActive: false,
             addressAirline: addressAirline,
-            airlineName: nameAirline
+            airlineName: nameAirline,
+            fund: 0
         });
 
-        registeredAirlines.add(1);
+        airlineAccts.push(addressAirline);
     }
-
 
    /**
     * @dev Buy insurance for a flight
     *
     */   
-    function buy
-                            (                             
+    /*function buy
+                            (    
+                                address addressAirline
+                                //address addressInsuree,
+                                //string flight,
+                                //uint256 timestamp                         
                             )
                             external
                             payable
                             isCallerAuthorized
                             rateLimit(buyLimit) //Rate Limiting, to prevent customers to potentially drain funds.
     {
-
-    }
+        //bytes32 flightkey = getFlightKey(addressAirline, flight, updatedTimestamp);
+        airlines[addressAirline].amountPaidInsurances.add(msg.value);
+    }*/
 
     /**
      *  @dev Credits payouts to insurees
     */
-    function creditInsurees
+    /*function creditInsurees
                                 (
+
                                 )
                                 external
-                                //pure
                                 isCallerAuthorized
                                 rateLimit(payoutLimit) // Rate Limitting, to limit payouts to insurees
     {
-    }
+
+    }*/
     
 
     /**
      *  @dev Transfers eligible payout funds to insuree
      *
     */
-    function pay
+    /*function pay
                             (
                             )
                             external
@@ -250,7 +271,7 @@ contract FlightSuretyData {
                             isCallerAuthorized
                             rateLimit(payoutLimit) // Rate Limitting, to limit payouts to insurees
     {
-    }
+    }*/
 
    /**
     * @dev Initial funding for the insurance. Unless there are too many delayed flights
@@ -258,16 +279,21 @@ contract FlightSuretyData {
     *
     */   
     function fund
-                            (   
+                            (
+                                address addressRegisteredAirline,
+                                uint256 amountFund
                             )
                             public
                             payable
                             isCallerAuthorized
-                            rateLimit(payoutLimit) // Rate Limitting, to regulate and avoid extensive funding (?)
     {
+        airlines[addressRegisteredAirline].fund.transfer(amountFund);
+
+        airlines[addressRegisteredAirline].isActive = true;
+        airlines[addressRegisteredAirline].fund = amountFund; 
     }
 
-    function getFlightKey
+    /*function getFlightKey
                         (
                             address airline,
                             string memory flight,
@@ -278,7 +304,7 @@ contract FlightSuretyData {
                         returns(bytes32) 
     {
         return keccak256(abi.encodePacked(airline, flight, timestamp));
-    }
+    }*/
 
     /**
     * @dev Fallback function for funding smart contract.
