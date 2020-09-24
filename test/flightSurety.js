@@ -39,7 +39,8 @@ contract('Flight Surety Tests', async (accounts) => {
             
   });
 
-  /*it('function call is made when multi-party threshold is reached', async () => {
+  //To be adjusted to implemented multi-party consensus here (see FlightSuretyData.sol)
+  it('function call is made when multi-party threshold is reached', async () => {
     
     // ARRANGE
     let admin1 = accounts[1];
@@ -62,7 +63,7 @@ contract('Flight Surety Tests', async (accounts) => {
     // ASSERT
     assert.equal(changeStatus, newStatus, "Multi-party call failed");
 
-  });*/
+  });
 
   it(`(multiparty) can allow access to setOperatingStatus() for Contract Owner account`, async function () {
 

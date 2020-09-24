@@ -157,7 +157,7 @@ contract FlightSuretyApp {
     /********************************************************************************************/
 
     function isOperational() 
-                            public 
+                            external 
                             returns(bool) 
     {
         return true;  // Modify to call data contract's status
@@ -295,12 +295,12 @@ contract FlightSuretyApp {
                                     external
                                     rateLimit(payoutLimit)
     {
-        require(flightSuretyData.registerAirline == true, "Airline is not registered - please await voting!");
+        require(flightSuretyData.IsAirlineRegistered(msg.sender), "Airline is not registered - please await voting!");
         require(amountFund == 10 ether, "The amount must be equal to 10 ether (ETH)!");
 
-        FlightSuretyData.fund(msg.sender, amountFund);
+        flightSuretyData.fund(msg.sender, amountFund);
 
-        emit AirlineActivated(msg.sender, flightSuretyData.airlines[msg.sender].airlineName);
+        emit AirlineActivated(msg.sender, flightSuretyData.getAirlineName(msg.sender));
     }
 
    /**
@@ -315,11 +315,11 @@ contract FlightSuretyApp {
                                 external
                                 requireIsOperational
     {
-        require(flightSuretyData.airlines[msg.sender].isActive == true, "Airline is not active - please pay the requested amount!");
+        require(flightSuretyData.IsAirlineActive(msg.sender), "Airline is not active - please pay the requested amount!");
         flights[getFlightKey(msg.sender, flight, updatedTimestamp)] = Flight({
             isRegistered: true,
             statusCode: 0,
-            updatedTimestamp: 0,
+            timestamp: updatedTimestamp,
             airline: msg.sender,
             flight: flight,
             paidAmount: 0,
@@ -346,9 +346,11 @@ contract FlightSuretyApp {
         flights[flightkey] = Flight({
             isRegistered: true,
             statusCode: statusCode,
-            updatedTimestamp: updatedTimestamp,
+            timestamp: updatedTimestamp,
             airline: airline,
-            flight: flight
+            flight: flight,
+            paidAmount: 0,
+            refundAmount: 0
         });
     }
 
@@ -379,7 +381,7 @@ contract FlightSuretyApp {
 
     // Incremented to add pseudo-randomness at various points
     uint8 private nonce = 0;    
-
+    
     // Fee to be paid when registering oracle
     uint256 public constant REGISTRATION_FEE = 1 ether;
 
@@ -551,8 +553,11 @@ contract FlightSuretyApp {
 
 interface FlightSuretyData {
     function registerAirline(address addressAirline, string nameAirline) external;
-    function IsAirlineActive(address addressAirline) external;
+    function IsAirlineActive(address addressAirline) external view returns(bool);
+    function IsAirlineRegistered (address addressAirline) external view returns(bool);
     function numberRegisteredAirlines() external view  returns(uint256); 
-    function isOperational() public view returns(bool);
+    function isOperational() external view returns(bool);
+    function fund(address addressRegisteredAirline,uint256 amountFund) external payable;
+    function getAirlineName(address addressAirline) external view returns(string memory);
 
 }

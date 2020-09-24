@@ -146,7 +146,7 @@ contract FlightSuretyData {
     * @return A bool that is the current operating status
     */      
     function isOperational() 
-                            public 
+                            external 
                             view 
                             returns(bool) 
     {
@@ -174,10 +174,16 @@ contract FlightSuretyData {
     /**
     * @dev Gets specific element / address from airlines mapping!
     */    
-    function getAirlines() view public returns(address[]) {
+    function getAirlines() external view returns(address[]) {
         return airlineAccts;
     }
 
+    /**
+    * @dev Gets name of specific Airline in airlines mapping!
+    */    
+    function getAirlineName(address addressAirline) external view returns(string memory) {
+        return airlines[addressAirline].airlineName;
+    }
 
     /**
     * @dev Gets the amount of airlines already registered
@@ -187,12 +193,21 @@ contract FlightSuretyData {
     }
 
     /**
-    * @dev In order to access airlines from the FlightSuretyApp contract
+    * @dev Checking if registered airline is active (has paid the requested fund)
     */    
     function IsAirlineActive (address addressAirline) external view returns(bool) {
-        //equire(addressAirline != address(0), "0x0 address not allowed!");
+        require(addressAirline != address(0), "0x0 address not allowed!");
+        require(airlines[addressAirline].isRegistered, "Airlines is not yet registered, please register and await voting!");
         return airlines[addressAirline].isActive;
     }   
+
+    /**
+    * @dev Checking if address is registered airline
+    */    
+    function IsAirlineRegistered (address addressAirline) external view returns(bool) {
+        require(addressAirline != address(0), "0x0 address not allowed!");
+        return airlines[addressAirline].isRegistered;
+    } 
 
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
@@ -283,11 +298,11 @@ contract FlightSuretyData {
                                 address addressRegisteredAirline,
                                 uint256 amountFund
                             )
-                            public
+                            external
                             payable
                             isCallerAuthorized
     {
-        airlines[addressRegisteredAirline].fund.transfer(amountFund);
+        addressRegisteredAirline.transfer(amountFund);
 
         airlines[addressRegisteredAirline].isActive = true;
         airlines[addressRegisteredAirline].fund = amountFund; 
@@ -310,11 +325,9 @@ contract FlightSuretyData {
     * @dev Fallback function for funding smart contract.
     *
     */
-    function() 
-                            external 
-                            payable 
+    function() external payable 
     {
-        fund();
+        //fund();
     }
 
 
