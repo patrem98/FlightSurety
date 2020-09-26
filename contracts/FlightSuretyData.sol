@@ -18,6 +18,7 @@ contract FlightSuretyData {
     }
     
     mapping(address => uint256) authorizedCallers;                      // To check that only App contract can call in!
+    address private firstairline = 0xf17f52151EbEF6C7334FAD080c5704D77216b732; //Defined in "2_deploy_contracts.js" as first airline and therefore contractOwner!
 
     address private contractOwner;                                      // Account used to deploy contract
     bool private operational = true;                                    // Blocks all state changes throughout the contract if false
@@ -165,6 +166,7 @@ contract FlightSuretyData {
                             external
                             requireMultiPartyConsensus(mode)
                             isCallerAuthorized
+                            requireIsOperational
                             // requireContractOwner --> After implementation of Multi-party consensus no longer valid/necessary
     {   
         require(mode != operational, "New mode must be different from existing mode");
@@ -174,28 +176,28 @@ contract FlightSuretyData {
     /**
     * @dev Gets specific element / address from airlines mapping!
     */    
-    function getAirlines() external view returns(address[]) {
+    function getAirlines() external view requireIsOperational returns(address[]) {
         return airlineAccts;
     }
 
     /**
     * @dev Gets name of specific Airline in airlines mapping!
     */    
-    function getAirlineName(address addressAirline) external view returns(string memory) {
+    function getAirlineName(address addressAirline) external view requireIsOperational returns(string memory) {
         return airlines[addressAirline].airlineName;
     }
 
     /**
     * @dev Gets the amount of airlines already registered
     */    
-    function numberRegisteredAirlines() external view  returns(uint256) {
+    function numberRegisteredAirlines() external view  requireIsOperational returns(uint256) {
         return airlineAccts.length;
     }
 
     /**
     * @dev Checking if registered airline is active (has paid the requested fund)
     */    
-    function IsAirlineActive (address addressAirline) external view returns(bool) {
+    function IsAirlineActive (address addressAirline) external view requireIsOperational returns(bool) {
         require(addressAirline != address(0), "0x0 address not allowed!");
         require(airlines[addressAirline].isRegistered, "Airlines is not yet registered, please register and await voting!");
         return airlines[addressAirline].isActive;
@@ -204,7 +206,7 @@ contract FlightSuretyData {
     /**
     * @dev Checking if address is registered airline
     */    
-    function IsAirlineRegistered (address addressAirline) external view returns(bool) {
+    function IsAirlineRegistered (address addressAirline) external view requireIsOperational returns(bool) {
         require(addressAirline != address(0), "0x0 address not allowed!");
         return airlines[addressAirline].isRegistered;
     } 
@@ -213,6 +215,34 @@ contract FlightSuretyData {
     /*                                     SMART CONTRACT FUNCTIONS                             */
     /********************************************************************************************/
 
+    /**
+    * @dev Add the first Airline! An extra function was implemented only for the registration of the first airline, 
+    * as from the second one the modifier "isCallerAuthorized" is used to make sure that only the current App-Contract 
+    * is able to call in. As the contract address of the App conract is computed out of the senders address and the nonce,
+    * it is difficult (but probably also possible) to know it in advance in order to grant permission to the App contract to register the first Airline.
+    */   
+    function registerFirstAirline
+                            (   
+                                address addressAirline,
+                                string nameAirline
+                            )
+                            external
+                            requireIsOperational
+    {
+        airlines[addressAirline] = Airline({
+            isRegistered: true,
+            isActive: false,
+            addressAirline: addressAirline,
+            airlineName: nameAirline,
+            fund: 0
+        });
+
+        airlineAccts.push(addressAirline);
+
+        //Authorize App-contract for all other external functions
+        authorizedCallers[msg.sender] = 1;
+    }
+   
    /**
     * @dev Add an airline to the registration queue
     *      Can only be called from FlightSuretyApp contract
@@ -227,6 +257,7 @@ contract FlightSuretyData {
                             //requireMultiPartyConsensus(mode) 
                             isCallerAuthorized
                             requireIsAirline
+                            requireIsOperational
     {
         airlines[addressAirline] = Airline({
             isRegistered: true,
@@ -301,6 +332,7 @@ contract FlightSuretyData {
                             external
                             payable
                             isCallerAuthorized
+                            requireIsOperational
     {
         addressRegisteredAirline.transfer(amountFund);
 

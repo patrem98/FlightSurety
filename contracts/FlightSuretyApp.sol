@@ -64,7 +64,7 @@ contract FlightSuretyApp {
     {
         contractOwner = dataContract;
         flightSuretyData = FlightSuretyData(contractOwner); //Initializing state variable
-        flightSuretyData.registerAirline(contractOwner, "contractOwnerAirline");
+        flightSuretyData.registerFirstAirline(contractOwner, "contractOwnerAirline");
         emit AirlineRegistered(contractOwner, "contractOnwerAirline");
     }
 
@@ -552,6 +552,7 @@ contract FlightSuretyApp {
 //Interface (reference) to FlighSuretyData contract
 
 interface FlightSuretyData {
+    function registerFirstAirline(address addressAirline, string nameAirline) external;
     function registerAirline(address addressAirline, string nameAirline) external;
     function IsAirlineActive(address addressAirline) external view returns(bool);
     function IsAirlineRegistered (address addressAirline) external view returns(bool);
