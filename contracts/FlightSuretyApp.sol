@@ -1,4 +1,4 @@
-pragma solidity >=0.4.25;
+pragma solidity >=0.6;
 
 // It's important to avoid vulnerabilities due to numeric overflow bugs
 // OpenZeppelin's SafeMath library, when used correctly, protects agains such bugs
@@ -145,7 +145,7 @@ contract FlightSuretyApp {
     /**
     * @dev Event to signal the withdrawal of the refund in case of a delayed flight
     */
-    event RefundWithdrawn(address addressInsuree, address addressAirline, string flight, uint256 timestamp);
+    event RefundWithdrawn(address payable addressInsuree, address addressAirline, string flight, uint256 timestamp);
 
     /**
     * @dev Event to signal the activiation of an airline (after paying the expected funds)
@@ -173,7 +173,7 @@ contract FlightSuretyApp {
     */ 
     function passengerPayment 
                                     (
-                                        string flight,
+                                        string calldata flight,
                                         uint256 timestamp,
                                         address addressAirline
                                     )
@@ -195,7 +195,7 @@ contract FlightSuretyApp {
     */ 
     function passengerRepayment 
                                     (
-                                        string flight,
+                                        string calldata flight,
                                         address addressAirline,
                                         uint256 timestamp
                                     )
@@ -214,10 +214,10 @@ contract FlightSuretyApp {
     */ 
     function passengerWithdrawal 
                                     (
-                                        string flight,
+                                        string calldata flight,
                                         address addressAirline,
                                         uint256 timestamp,
-                                        address addressInsuree
+                                        address payable addressInsuree
                                     )
                                     external
                                     payable
@@ -248,7 +248,7 @@ contract FlightSuretyApp {
     function registerAirline
                             (   
                                 address addressAirline,
-                                string nameAirline 
+                                string calldata nameAirline 
                             )
                             external
                             requireIsOperational
@@ -309,7 +309,7 @@ contract FlightSuretyApp {
     */  
     function registerFlight
                                 (
-                                    string flight,
+                                    string calldata flight,
                                     uint256 updatedTimestamp
                                 )
                                 external
@@ -359,7 +359,7 @@ contract FlightSuretyApp {
     function fetchFlightStatus
                         (
                             address airline,
-                            string flight,
+                            string calldata flight,
                             uint256 timestamp                            
                         )
                         external
@@ -462,7 +462,7 @@ contract FlightSuretyApp {
                         (
                             uint8 index,
                             address airline,
-                            string flight,
+                            string calldata flight,
                             uint256 timestamp,
                             uint8 statusCode
                         )
@@ -552,8 +552,8 @@ contract FlightSuretyApp {
 //Interface (reference) to FlighSuretyData contract
 
 interface FlightSuretyData {
-    function registerFirstAirline(address addressAirline, string nameAirline) external;
-    function registerAirline(address addressAirline, string nameAirline) external;
+    function registerFirstAirline(address addressAirline, string calldata nameAirline) external;
+    function registerAirline(address addressAirline, string calldata nameAirline) external;
     function IsAirlineActive(address addressAirline) external view returns(bool);
     function IsAirlineRegistered (address addressAirline) external view returns(bool);
     function numberRegisteredAirlines() external view  returns(uint256); 

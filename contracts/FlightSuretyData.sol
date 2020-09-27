@@ -1,4 +1,4 @@
-pragma solidity >=0.4.25;
+pragma solidity >=0.6;
 
 import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
 
@@ -20,7 +20,7 @@ contract FlightSuretyData {
     mapping(address => uint256) authorizedCallers;                      // To check that only App contract can call in!
     address private firstairline = 0xf17f52151EbEF6C7334FAD080c5704D77216b732; //Defined in "2_deploy_contracts.js" as first airline and therefore contractOwner!
 
-    address private contractOwner;                                      // Account used to deploy contract
+    address payable contractOwner;                                      // Account used to deploy contract
     bool private operational = true;                                    // Blocks all state changes throughout the contract if false
     mapping(address => Airline) private airlines;                               // Mapping for storing user profiles
     address[] airlineAccts = new address[](0); 
@@ -176,7 +176,7 @@ contract FlightSuretyData {
     /**
     * @dev Gets specific element / address from airlines mapping!
     */    
-    function getAirlines() external view requireIsOperational returns(address[]) {
+    function getAirlines() external view requireIsOperational returns(address[] memory) {
         return airlineAccts;
     }
 
@@ -224,7 +224,7 @@ contract FlightSuretyData {
     function registerFirstAirline
                             (   
                                 address addressAirline,
-                                string nameAirline
+                                string calldata nameAirline
                             )
                             external
                             requireIsOperational
@@ -251,7 +251,7 @@ contract FlightSuretyData {
     function registerAirline
                             (   
                                 address addressAirline,
-                                string nameAirline
+                                string calldata nameAirline
                             )
                             external
                             //requireMultiPartyConsensus(mode) 
@@ -326,7 +326,7 @@ contract FlightSuretyData {
     */   
     function fund
                             (
-                                address addressRegisteredAirline,
+                                address payable addressRegisteredAirline,
                                 uint256 amountFund
                             )
                             external
@@ -357,11 +357,14 @@ contract FlightSuretyData {
     * @dev Fallback function for funding smart contract.
     *
     */
-    function() external payable 
+    fallback() external payable
     {
-        //fund();
+        contractOwner.transfer(msg.value);
     }
 
-
+    receive() external payable
+    {
+        contractOwner.transfer(msg.value);
+    }
 }
 
