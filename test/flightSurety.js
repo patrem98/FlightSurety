@@ -148,21 +148,42 @@ contract('Flight Surety Tests', async (accounts) => {
     
     // ARRANGE
     let newAirline = accounts[2];
+    //let passenger = accounts[3];
 
     // ACT
     try {
-        await config.flightSuretyApp.passengerPayment(newAirline, {from: config.firstAirline});
+        await config.flightSuretyApp.passengerPayment("Flight 100", 100, {from: config.newAirline, value: web3.utils.toWei("1", "ether")});
     }
     catch(e) {
 
     }
-    let result = await config.flightSuretyData.IsAirlineRegistered.call(newAirline); 
+    let result = await config.flightSuretyApp.getPassengerPaidAmount.call("Flight 100", 100, newAirline); 
 
     // ASSERT
-    assert.equal(result, false, "Airline should not be able to register another airline if it hasn't provided funding (incl. first airline)");
+    assert.equal(result, web3.utils.toWei("1", "ether"), "Amount paid should be > 0 Ether!");
 
   });
 
+  it('Passenger can withdraw and receives 1.5 times amount paid', async () => {
+    
+    // ARRANGE
+    let newAirline = accounts[2];
+    let passenger = accounts[3];
 
+    // ACT
+    try {
+        await config.flightSuretyApp.passengerRepayment("Flight 100", 100, {from: config.newAirline, value: web3.utils.toWei("1", "ether")});
+        await config.flightSuretyApp.passengerWithdrawal("Flight 100", 100, {from: config.newAirline, value: web3.utils.toWei("1", "ether"), passenger});
+    }
+    catch(e) {
+
+    }
+    let result = await config.flightSuretyData.getRepaidAmountPassenger.call("Flight 100", 100, newAirline); 
+    let balance = await web3.eth.getBalance(passenger);
+
+    // ASSERT
+    assert.equal(result, false, "Passenger is not getting the 1.5x amount of his purchase as refund!");
+    assert.equal(result, balance, "Passenger cannot withdraw correct amount!");
+  });
 
 });

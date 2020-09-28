@@ -162,7 +162,34 @@ contract FlightSuretyApp {
     {
         return true;  // Modify to call data contract's status
     }
+
+    //In order to make sure that amount paid by user is correct stored (see flightSurety.js)
+    function getPassengerPaidAmount(
+                                        string calldata flight,
+                                        uint256 timestamp,
+                                        address addressAirline
+                                    ) 
+                            external 
+                            payable
+                            returns(uint256) 
+    {
+        bytes32 flightkey = getFlightKey(addressAirline, flight, timestamp);
+        return flights[flightkey].paidAmount;
+    }
     
+    //In order to make sure that amount paid by user paid back 1.5 times in case of delayed flight (see flightSurety.js)
+    function getRepaidAmountPassenger(
+                                        string calldata flight,
+                                        uint256 timestamp,
+                                        address addressAirline
+                                    ) 
+                            external 
+                            payable
+                            returns(uint256) 
+    {
+        bytes32 flightkey = getFlightKey(addressAirline, flight, timestamp);
+        return flights[flightkey].refundAmount;
+    }
 
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
