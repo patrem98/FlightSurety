@@ -162,6 +162,7 @@ contract FlightSuretyApp {
     {
         return true;  // Modify to call data contract's status
     }
+    
 
     /********************************************************************************************/
     /*                                     SMART CONTRACT FUNCTIONS                             */
@@ -280,9 +281,6 @@ contract FlightSuretyApp {
             }
             //return (success, 0);
     }
-
-        
-    
 
     /**
     * @dev Add an airline to the registration queue

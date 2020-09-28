@@ -18,7 +18,7 @@ contract FlightSuretyData {
     }
     
     mapping(address => uint256) authorizedCallers;                      // To check that only App contract can call in!
-    address private firstairline = 0xf17f52151EbEF6C7334FAD080c5704D77216b732; //Defined in "2_deploy_contracts.js" as first airline and therefore contractOwner!
+    //address private firstairline = 0xf17f52151EbEF6C7334FAD080c5704D77216b732; //Defined in "2_deploy_contracts.js" as first airline and therefore contractOwner!
 
     address payable contractOwner;                                      // Account used to deploy contract
     bool private operational = true;                                    // Blocks all state changes throughout the contract if false
@@ -29,8 +29,8 @@ contract FlightSuretyData {
     address[] multiCalls = new address[](0);                            // Array of addresses to prevent multiple calls of the same address (short array only --> lockout bug thru gaslimit!)
 
     //uint256 buyLimit = 600;                                             // 600 equals 10 times 60 seconds, meaning min 10 minutes between two function calls when buying!
-    //uint256 private enabled = block.timestamp;                          // "Timer"-variable for Rate Limiting modifier
-    //uint256 payoutLimit = 600;                                          // 600 equals 10 times 60 seconds, meaning min 10 minutes between two function calls when paying insurees!
+    uint256 private enabled = block.timestamp;                          // "Timer"-variable for Rate Limiting modifier
+    uint256 payoutLimit = 600;                                          // 600 equals 10 times 60 seconds, meaning min 10 minutes between two function calls when paying insurees!
 
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
@@ -109,12 +109,12 @@ contract FlightSuretyData {
 
     /** 
     * @dev Modifier that implements "Rate Limiting" as a payment protection pattern (in general limiting function calls when applied)
-    */ /*
+    */ 
     modifier rateLimit(uint256 time) {
         require(block.timestamp >= enabled, "Rate limiting in effect");
         enabled = enabled.add(time);
         _;
-    } */
+    }
 
     /**
     * @dev Modifier that requires the function caller to be a registered and participating (submitted funds) Airline
@@ -223,18 +223,28 @@ contract FlightSuretyData {
     */   
     function registerFirstAirline
                             (   
-                                address addressAirline,
-                                string calldata nameAirline
+                                address payable addressAirline,
+                                string calldata nameAirline,
+                                uint256 amountFund
+                                
                             )
                             external
                             requireIsOperational
+                            rateLimit(payoutLimit)
+                            requireIsAirline
     {
+        require(amountFund == 10 ether, "The amount must be equal to 10 ether (ETH)!");
+
+        //fund(msg.sender, amountFund);
+
+        addressAirline.transfer(amountFund);
+
         airlines[addressAirline] = Airline({
             isRegistered: true,
-            isActive: false,
+            isActive: true,
             addressAirline: addressAirline,
             airlineName: nameAirline,
-            fund: 0
+            fund: amountFund
         });
 
         airlineAccts.push(addressAirline);
