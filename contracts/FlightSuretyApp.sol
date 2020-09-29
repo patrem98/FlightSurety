@@ -1,4 +1,4 @@
-pragma solidity >=0.6;
+pragma solidity >=0.5;
 
 // It's important to avoid vulnerabilities due to numeric overflow bugs
 // OpenZeppelin's SafeMath library, when used correctly, protects agains such bugs
@@ -34,7 +34,10 @@ contract FlightSuretyApp {
     uint256 private enabled = block.timestamp;         // "Timer"-variable for Rate Limiting modifier
 
     uint256 private constant VOTING_THRESHOLD = 50;    // Implemented voting mechanism bases on multi-party consensus                                      
-    address[] multiCalls = new address[](0);           
+    address[] multiCalls = new address[](0);     
+
+    uint256 amountFirstFunding = 10 ether; 
+    //string firstAirlineName = "FirstAirline";      
 
     struct Flight {
         bool isRegistered;
@@ -64,7 +67,7 @@ contract FlightSuretyApp {
     {
         contractOwner = dataContract;
         flightSuretyData = FlightSuretyData(contractOwner); //Initializing state variable
-        flightSuretyData.registerFirstAirline(contractOwner, "contractOwnerAirline");
+        flightSuretyData.registerFirstAirline(contractOwner, amountFirstFunding);
         emit AirlineRegistered(contractOwner, "contractOnwerAirline");
     }
 

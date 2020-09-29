@@ -25,11 +25,12 @@ contract('Flight Surety Tests', async (accounts) => {
 
   it(`multiparty can block access to setOperatingStatus()`, async function () {
 
-      // Ensure that access is denied for accounts not holding enough "votes" by the members (registered & active airlines)
       let accessDenied = false;
+      let newAirline = accounts[2];
+
       try 
       {
-          await config.flightSuretyData.setOperatingStatus(false, { from: config.testAddresses[2] });
+          await config.flightSuretyData.setOperatingStatus(false, { from: newAirline });
       }
       catch(e) {
           accessDenied = true;
@@ -38,19 +39,45 @@ contract('Flight Surety Tests', async (accounts) => {
             
   });
 
-  it(`multiparty can allow access to setOperatingStatus()`, async function () {
+  it(`multiparty can allow change of state of contract if majority is reached`, async function () {
 
-      // Ensure that access is allowed for accounts not holding enough "votes" by the members (registered & active airlines)
-      let accessDenied = false;
-      try 
-      {
-          await config.flightSuretyData.setOperatingStatus(false);
-      }
-      catch(e) {
-          accessDenied = true;
-      }
-      assert.equal(accessDenied, false, "Access not restricted to Contract Owner");
-      
+    // ARRANGE
+    let newAirline1 = accounts[2];
+    let newAirline2 = accounts[3];
+    let newAirline3 = accounts[4];
+
+    //Saving the initial contract state
+    let originalState = await config.flightSuretyData.isOperational.call();
+    console.log(originalState);
+
+    // ACT
+    try {
+        //Registering four new airlines
+        await config.flightSuretyApp.registerAirline(newAirline1, {from: config.firstAirline});
+        await config.flightSuretyApp.registerAirline(newAirline2, {from: config.firstAirline});
+        await config.flightSuretyApp.registerAirline(newAirline3, {from: config.firstAirline});
+
+        //Ensuring that all newly registered airlines have paid the requested amount of 10 Ether as funding
+        await config.flightSuretyApp.activateRegisteredAirline(web3.utils.toWei("10", "ether"), {from: newAirline1});
+        await config.flightSuretyApp.activateRegisteredAirline(web3.utils.toWei("10", "ether"), {from: newAirline2});
+        await config.flightSuretyApp.activateRegisteredAirline(web3.utils.toWei("10", "ether"), {from: newAirline3});
+
+        //Change operating status if majority is reached
+        await config.flightSuretyApp.setOperatingStatus(false, {from: newAirline1});
+        await config.flightSuretyApp.setOperatingStatus(false, {from: newAirline2});
+        await config.flightSuretyApp.setOperatingStatus(false, {from: newAirline3});
+    }
+    catch(e) {
+      console.log("Error!");
+    }
+
+    //State of contrat after voting of three registered and active airlines
+    let changedState = await config.flightSuretyData.isOperational.call();
+    console.log(changedState);
+
+    // ASSERT
+    assert.equal(changedState, !originalState, "State of contract has not changed!");
+
   });
 
     it(`multiparty can block access to functions using requireIsOperational when operating status is false`, async function () {
@@ -78,19 +105,25 @@ contract('Flight Surety Tests', async (accounts) => {
   it('Airline can be registered, but does not participate in contract until it submits funding of 10 ether', async () => {
     
     // ARRANGE
-    let newAirline = accounts[2];
+    //let firstAirline = accounts[2];
+    //let newAirline = accounts[3];
+
+    let firstAirline = config.testAddresses[0];
+    let newAirline = config.testAddresses[1];
 
     // ACT
-    try {
-        await config.flightSuretyApp.registerAirline(newAirline, {from: config.firstAirline});
-    }
-    catch(e) {
+    //try {
+        await config.flightSuretyData.registerFirstAirline({from: firstAirline}, "First Airline", web3.utils.toWei("10", "ether"));
+        await config.flightSuretyApp.registerAirline(newAirline, {from: firstAirline});
+    //}
+    //catch(e) {
 
-    }
-    let result = await config.flightSuretyData.IsAirlineRegistered.call(newAirline); 
+    //}
+        let result = await config.flightSuretyData.IsAirlineRegistered.call(newAirline); 
 
     // ASSERT
-    assert.equal(result, false, "Airline should not be able to register another airline if it hasn't provided funding (incl. first airline)");
+    //assert.equal(result, false, "Airline should not be able to register another airline if it hasn't provided funding (incl. first airline)");
+    assert.equal(result, true, "(First) Airline should be able to register up to 4 other airlines after transfering required funds!");
 
   });
 
@@ -112,13 +145,13 @@ contract('Flight Surety Tests', async (accounts) => {
         await config.flightSuretyApp.registerAirline(newAirline4, {from: config.firstAirline});
 
         //Ensuring that all newly registered airlines have paid the requested amount of 10 Ether as funding
-        await config.flightSuretyApp.activateRegisteredAirline(newAirline1, {from: config.newAirline1});
-        await config.flightSuretyApp.activateRegisteredAirline(newAirline2, {from: config.newAirline2});
-        await config.flightSuretyApp.activateRegisteredAirline(newAirline3, {from: config.newAirline3});
-        await config.flightSuretyApp.activateRegisteredAirline(newAirline4, {from: config.newAirline4});
+        await config.flightSuretyApp.activateRegisteredAirline(web3.utils.toWei("10", "ether"), {from: newAirline1});
+        await config.flightSuretyApp.activateRegisteredAirline(web3.utils.toWei("10", "ether"), {from: newAirline2});
+        await config.flightSuretyApp.activateRegisteredAirline(web3.utils.toWei("10", "ether"), {from: newAirline3});
+        await config.flightSuretyApp.activateRegisteredAirline(web3.utils.toWei("10", "ether"), {from: newAirline4});
 
         //Registering fifth Airline through multi-party consensus
-        await config.flightSuretyApp.registerAirline(newAirline5, {from: config.firstAirline, config.newAirline1, config.newAirline2, config.newAirline3});
+        await config.flightSuretyApp.registerAirline(newAirline5, {from: firstAirline, newAirline1, newAirline2, newAirline3});
     }
     catch(e) {
 

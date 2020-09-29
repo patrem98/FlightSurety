@@ -1,4 +1,4 @@
-pragma solidity >=0.6;
+pragma solidity >=0.5;
 
 import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
 
@@ -24,6 +24,8 @@ contract FlightSuretyData {
     bool private operational = true;                                    // Blocks all state changes throughout the contract if false
     mapping(address => Airline) private airlines;                               // Mapping for storing user profiles
     address[] airlineAccts = new address[](0); 
+    
+    uint256 private constant VOTING_THRESHOLD = 50;    // Implemented voting mechanism bases on multi-party consensus                                      
 
     uint256 constant M = 2;                                             // M = number of required addresses for consensus
     address[] multiCalls = new address[](0);                            // Array of addresses to prevent multiple calls of the same address (short array only --> lockout bug thru gaslimit!)
@@ -90,21 +92,25 @@ contract FlightSuretyData {
     */
     modifier requireMultiPartyConsensus(bool mode)
     {
+        _; 
+        
         bool isDuplicate = false;
+
         for(uint c=0; c<multiCalls.length; c++) {
             if (multiCalls[c] == msg.sender) {
                 isDuplicate = true;
                 break;
-            }
+                }
         }
+
         require(!isDuplicate, "Caller has already called this function.");
 
         multiCalls.push(msg.sender);
-        if (multiCalls.length >= M) {
-            operational = mode;      
-            multiCalls = new address[](0);      
-        }
-        _;
+            if (multiCalls.length.div(airlineAccts.length).mul(100) >= VOTING_THRESHOLD) {
+                operational = mode;   
+                multiCalls = new address[](0);      
+            }  
+
     }
 
     /** 
@@ -165,12 +171,12 @@ contract FlightSuretyData {
                             ) 
                             external
                             requireMultiPartyConsensus(mode)
-                            isCallerAuthorized
-                            requireIsOperational
+                            //isCallerAuthorized
+                            //requireIsAirline
+                            //requireIsOperational
                             // requireContractOwner --> After implementation of Multi-party consensus no longer valid/necessary
     {   
         require(mode != operational, "New mode must be different from existing mode");
-        //require(airlines[msg.sender].isAdmin, "Caller is not an admin");
     }
 
     /**
@@ -224,27 +230,26 @@ contract FlightSuretyData {
     function registerFirstAirline
                             (   
                                 address payable addressAirline,
-                                string calldata nameAirline,
-                                uint256 amountFund
-                                
+                                uint256 amountPaid
                             )
                             external
+                            payable
                             requireIsOperational
                             rateLimit(payoutLimit)
-                            requireIsAirline
+                            //requireIsAirline
     {
-        require(amountFund == 10 ether, "The amount must be equal to 10 ether (ETH)!");
+        require(amountPaid == 10 ether, "The amount must be equal to 10 ether (ETH)!");
 
         //fund(msg.sender, amountFund);
 
-        addressAirline.transfer(amountFund);
+        addressAirline.transfer(amountPaid);
 
         airlines[addressAirline] = Airline({
             isRegistered: true,
             isActive: true,
             addressAirline: addressAirline,
-            airlineName: nameAirline,
-            fund: amountFund
+            airlineName: "First Airline",
+            fund: amountPaid
         });
 
         airlineAccts.push(addressAirline);
@@ -367,14 +372,14 @@ contract FlightSuretyData {
     * @dev Fallback function for funding smart contract.
     *
     */
-    fallback() external payable
+    function fallback() external payable
     {
         contractOwner.transfer(msg.value);
     }
 
-    receive() external payable
-    {
-        contractOwner.transfer(msg.value);
-    }
+   // receive() external payable
+   // {
+   //     contractOwner.transfer(msg.value);
+   // }
 }
 
