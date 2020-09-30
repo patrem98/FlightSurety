@@ -242,7 +242,7 @@ contract FlightSuretyData {
 
         //fund(msg.sender, amountFund);
 
-        addressAirline.transfer(amountPaid);
+        //addressAirline.transfer(amountPaid); --> Deployment of App contracts fails, when trying to transfer amount - not resolved?!!
 
         airlines[addressAirline] = Airline({
             isRegistered: true,
@@ -377,9 +377,9 @@ contract FlightSuretyData {
         contractOwner.transfer(msg.value);
     }
 
-   // receive() external payable
-   // {
-   //     contractOwner.transfer(msg.value);
-   // }
+    receive() external payable
+    {
+        contractOwner.transfer(msg.value);
+    }
 }
 

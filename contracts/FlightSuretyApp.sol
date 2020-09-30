@@ -27,7 +27,7 @@ contract FlightSuretyApp {
 
     uint256 private constant NUMBER_AIRLINES_THRESHOLD = 4; 
 
-    address private contractOwner;                     // Account used to deploy contract
+    address payable contractOwner;                     // Account used to deploy contract
     FlightSuretyData flightSuretyData;  
 
     uint256 payoutLimit = 600;                         // 600 equals 10 times 60 seconds, meaning min 10 minutes between two function calls when paying insurees!
@@ -61,14 +61,14 @@ contract FlightSuretyApp {
     */
     constructor
                                 (
-                                    address dataContract //address of deployed data contract ("FlightSuretyData")
+                                    address payable dataContract //address of deployed data contract ("FlightSuretyData")
                                 ) 
                                 public
     {
         contractOwner = dataContract;
         flightSuretyData = FlightSuretyData(contractOwner); //Initializing state variable
         flightSuretyData.registerFirstAirline(contractOwner, amountFirstFunding);
-        emit AirlineRegistered(contractOwner, "contractOnwerAirline");
+        emit AirlineRegistered(contractOwner, "FirstAirline");
     }
 
     /********************************************************************************************/
@@ -580,7 +580,7 @@ contract FlightSuretyApp {
 //Interface (reference) to FlighSuretyData contract
 
 interface FlightSuretyData {
-    function registerFirstAirline(address addressAirline, string calldata nameAirline) external;
+    function registerFirstAirline(address payable addressAirline, uint256 amounPaid) external payable;
     function registerAirline(address addressAirline, string calldata nameAirline) external;
     function IsAirlineActive(address addressAirline) external view returns(bool);
     function IsAirlineRegistered (address addressAirline) external view returns(bool);
