@@ -1,4 +1,4 @@
-pragma solidity >=0.5;
+pragma solidity >=0.6;
 
 import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
 
@@ -372,7 +372,7 @@ contract FlightSuretyData {
     * @dev Fallback function for funding smart contract.
     *
     */
-    function fallback() external payable
+    fallback() external payable
     {
         contractOwner.transfer(msg.value);
     }
