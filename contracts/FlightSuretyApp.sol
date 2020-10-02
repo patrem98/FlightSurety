@@ -231,8 +231,8 @@ contract FlightSuretyApp {
     function passengerPayment 
                                     (
                                         string calldata flight,
-                                        uint256 timestamp,
-                                        address addressAirline
+                                        address addressAirline,
+                                        uint256 timestamp
                                     )
                                     external
                                     payable
@@ -240,9 +240,12 @@ contract FlightSuretyApp {
                                     rateLimit(payoutLimit)
                                     paidEnough
     {
+        emit InsurancePaid(msg.value, msg.sender, flight, timestamp);
+
         require(flightSuretyData.IsAirlineActive(addressAirline), "Inputted address does not belong to an active Airline!");
 
         emit InsurancePaid(msg.value, msg.sender, flight, timestamp);
+
         bytes32 flightkey = getFlightKey(addressAirline, flight, timestamp);
         flights[flightkey].paidAmount = msg.value; 
 

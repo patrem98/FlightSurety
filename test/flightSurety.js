@@ -194,12 +194,12 @@ contract('Flight Surety Tests', async (accounts) => {
     
     // ARRANGE
     let currentAirlines = await config.flightSuretyData.getAirlines();
-    let Airline3 = currentAirlines[3];
-    let Passenger1 = accounts[6];
+    let Airline2 = currentAirlines[2];
+    let Passenger1 = accounts[8];
 
     // ACT
     try {
-        await config.flightSuretyApp.passengerPayment("Flight 100", 100, Airline3, {from: Passenger1, value: web3.utils.toWei("1", "ether")});
+        await config.flightSuretyApp.passengerPayment("Flight 100", Airline2, 100, {from: Passenger1, value: web3.utils.toWei("1", "ether")});
     }
     catch(e) {
         console.log("Error with passenger payment!");
@@ -208,7 +208,7 @@ contract('Flight Surety Tests', async (accounts) => {
         //console.log(check);
         //console.log(check1);
     }
-    let result = await config.flightSuretyApp.getPassengerPaidAmount.call("Flight 100", 100, Airline3); 
+    let result = await config.flightSuretyApp.getPassengerPaidAmount.call("Flight 100", 100, Airline2); 
 
     // ASSERT
     assert.equal(result, web3.utils.toWei("1", "ether"), "Amount paid should be > 0 Ether!");
