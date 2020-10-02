@@ -30,14 +30,17 @@ contract FlightSuretyApp {
     address payable contractOwner;                     // Account used to deploy contract
     FlightSuretyData flightSuretyData;  
 
-    uint256 payoutLimit = 600;                         // 600 equals 10 times 60 seconds, meaning min 10 minutes between two function calls when paying insurees!
+    uint256 payoutLimit = 0;                            /* "0" for testing purposes, so that 
+                                                        I don't have to wait too long, however adjustable
+                                                        for real-life-scenario!*/
+
     uint256 private enabled = block.timestamp;         // "Timer"-variable for Rate Limiting modifier
 
     uint256 private constant VOTING_THRESHOLD = 50;    // Implemented voting mechanism bases on multi-party consensus                                      
     address[] multiCalls = new address[](0);     
 
     uint256 amountFirstFunding = 10 ether; 
-    //string firstAirlineName = "FirstAirline";      
+    address payable addressFirstAirline;      
 
     struct Flight {
         bool isRegistered;
@@ -67,7 +70,7 @@ contract FlightSuretyApp {
     {
         contractOwner = dataContract;
         flightSuretyData = FlightSuretyData(contractOwner); //Initializing state variable
-        flightSuretyData.registerFirstAirline(contractOwner, amountFirstFunding);
+        flightSuretyData.registerFirstAirline(addressFirstAirline, amountFirstFunding);
         emit AirlineRegistered(contractOwner, "FirstAirline");
     }
 
@@ -124,7 +127,17 @@ contract FlightSuretyApp {
     */
     modifier AirlineIsActive()
     {
+        require(flightSuretyData.IsAirlineRegistered(msg.sender), "Airline is not registered - please register first!");
         require(flightSuretyData.IsAirlineActive(msg.sender), "Airline is not active - please pay the requested amount!");
+        _;
+    }
+
+    /**
+    * @dev Modifier that requires the function caller to be a registered Airline
+    */
+    modifier requireIsRegistered(address payable addressAirline)
+    {
+        require(flightSuretyData.IsAirlineRegistered(addressAirline), "Arlines can only be active if they are registered - Please register first!");
         _;
     }
 
@@ -151,10 +164,24 @@ contract FlightSuretyApp {
     event RefundWithdrawn(address payable addressInsuree, address addressAirline, string flight, uint256 timestamp);
 
     /**
-    * @dev Event to signal the activiation of an airline (after paying the expected funds)
+    * @dev Event to singal whether a certan Airline has paid the requested funds (10 ether)
     */
     event AirlineActivated(address addressAirline, string airlineName);
 
+    /**
+    * @dev Event to signal when the airline registration process changes to the voting mechanism (when 4 airlines are registered)
+    */
+    event MultipartyRegistrationProcess(string transferToMultiPartyVoting);
+
+    /**
+    * @dev Event to verify the amount refunded to the passenger in case of a delayed flight (1.5xpaidAmount)
+    */
+    event RefundAmount(uint256 RefundAmount);
+
+    /**
+    * @dev Event to signal the successfull retrieval of the flight key
+    */
+    event FlightKey(string FlightKeyretreived);
     /********************************************************************************************/
     /*                                       UTILITY FUNCTIONS                                  */
     /********************************************************************************************/
@@ -187,7 +214,6 @@ contract FlightSuretyApp {
                                         address addressAirline
                                     ) 
                             external 
-                            payable
                             returns(uint256) 
     {
         bytes32 flightkey = getFlightKey(addressAirline, flight, timestamp);
@@ -214,10 +240,13 @@ contract FlightSuretyApp {
                                     rateLimit(payoutLimit)
                                     paidEnough
     {
+        require(flightSuretyData.IsAirlineActive(addressAirline), "Inputted address does not belong to an active Airline!");
+
+        emit InsurancePaid(msg.value, msg.sender, flight, timestamp);
         bytes32 flightkey = getFlightKey(addressAirline, flight, timestamp);
         flights[flightkey].paidAmount = msg.value; 
 
-        emit InsurancePaid(msg.value, msg.sender, flight, timestamp);
+        
     }
 
     /**
@@ -235,8 +264,12 @@ contract FlightSuretyApp {
                                     rateLimit(payoutLimit)
     {
         bytes32 flightkey = getFlightKey(addressAirline, flight, timestamp);
-        require(flights[flightkey].statusCode == STATUS_CODE_LATE_AIRLINE, "Airline is not late or delay is not cause by Airline mistake!" );
+       
+        //require(flights[flightkey].statusCode == STATUS_CODE_LATE_AIRLINE, "Airline is not late or delay is not cause by Airline mistake!" );
+        
         flights[flightkey].refundAmount = flights[flightkey].paidAmount.mul(3).div(2);
+
+        emit RefundAmount(flights[flightkey].refundAmount);
     }
 
     /**
@@ -286,13 +319,17 @@ contract FlightSuretyApp {
                             AirlineIsActive
                             //returns(bool success, uint256 votes)
     {        
-        if(flightSuretyData.numberRegisteredAirlines() < NUMBER_AIRLINES_THRESHOLD) {
+        if(flightSuretyData.numberRegisteredAirlines()-1 <= NUMBER_AIRLINES_THRESHOLD) {
 
             flightSuretyData.registerAirline(addressAirline, nameAirline);
+
             emit AirlineRegistered(addressAirline, nameAirline);
 
         }
         else {
+
+            emit MultipartyRegistrationProcess("From now on every airline needs to be voted in!");
+
                 bool isDuplicate = false;
                 for(uint c=0; c<multiCalls.length; c++) {
                     if (multiCalls[c] == msg.sender) {
@@ -303,11 +340,16 @@ contract FlightSuretyApp {
                 require(!isDuplicate, "Caller has already called this function.");
 
                 multiCalls.push(msg.sender);
-                if (multiCalls.length.div(flightSuretyData.numberRegisteredAirlines()).mul(100) >= VOTING_THRESHOLD) {
+
+                uint256 numberAgreedAirlines = multiCalls.length;
+                uint256 totalNumberAirlines = flightSuretyData.numberRegisteredAirlines();
+               
+                if ((numberAgreedAirlines.mul(100)).div(totalNumberAirlines) >= VOTING_THRESHOLD) {
                     flightSuretyData.registerAirline(addressAirline, nameAirline);  
                     emit AirlineRegistered(addressAirline, nameAirline);    
                     multiCalls = new address[](0);      
                 }
+
             }
             //return (success, 0);
     }
@@ -322,11 +364,13 @@ contract FlightSuretyApp {
                                     )
                                     external
                                     rateLimit(payoutLimit)
+                                    requireIsRegistered(msg.sender)
     {
         require(flightSuretyData.IsAirlineRegistered(msg.sender), "Airline is not registered - please await voting!");
         require(amountFund == 10 ether, "The amount must be equal to 10 ether (ETH)!");
 
-        flightSuretyData.fund(msg.sender, amountFund);
+        //flightSuretyData.fund(msg.sender, amountFund);
+        flightSuretyData.activateAirline(msg.sender, amountFund);
 
         emit AirlineActivated(msg.sender, flightSuretyData.getAirlineName(msg.sender));
     }
@@ -338,23 +382,23 @@ contract FlightSuretyApp {
     function registerFlight
                                 (
                                     string calldata flight,
-                                    uint256 updatedTimestamp
+                                    uint256 timestamp
                                 )
                                 external
                                 requireIsOperational
     {
         require(flightSuretyData.IsAirlineActive(msg.sender), "Airline is not active - please pay the requested amount!");
-        flights[getFlightKey(msg.sender, flight, updatedTimestamp)] = Flight({
+        flights[getFlightKey(msg.sender, flight, timestamp)] = Flight({
             isRegistered: true,
             statusCode: 0,
-            timestamp: updatedTimestamp,
+            timestamp: timestamp,
             airline: msg.sender,
             flight: flight,
             paidAmount: 0,
             refundAmount: 0
         });
 
-        emit FlightRegistered(msg.sender, updatedTimestamp, flight);
+        emit FlightRegistered(msg.sender, timestamp, flight);
     }
     
    /**
@@ -526,6 +570,7 @@ contract FlightSuretyApp {
                         internal
                         returns(bytes32) 
     {
+        emit FlightKey("Successfully retrieved FlightKey!");
         return keccak256(abi.encodePacked(airline, flight, timestamp));
     }
 
@@ -582,6 +627,7 @@ contract FlightSuretyApp {
 interface FlightSuretyData {
     function registerFirstAirline(address payable addressAirline, uint256 amounPaid) external payable;
     function registerAirline(address addressAirline, string calldata nameAirline) external;
+    function activateAirline(address payable addressAirline, uint256 amountPaid) external;
     function IsAirlineActive(address addressAirline) external view returns(bool);
     function IsAirlineRegistered (address addressAirline) external view returns(bool);
     function numberRegisteredAirlines() external view  returns(uint256); 

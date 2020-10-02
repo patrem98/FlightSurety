@@ -12,7 +12,7 @@ contract FlightSuretyData {
     struct Airline {
         bool isRegistered;
         bool isActive;                                                   //true if registered airline submits funding of 10 ether
-        address addressAirline;
+        address payable addressAirline;
         string airlineName;
         uint256 fund;
     }
@@ -37,6 +37,21 @@ contract FlightSuretyData {
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
     /********************************************************************************************/
+
+    /**
+    * @dev Event to signal the change of the state of the contract
+    */
+    event StateChanged(bool mode, string Reason);
+
+    /**
+    * @dev Event to signal the change of the state of the contract
+    */
+    event PAirlinesAgreed(
+        uint256 PercentageAirlinesAgreed, 
+        uint256 numberAgreedAirlines, 
+        uint256 numberTotalAirlines,
+        address[] registeredAirlines
+        );
 
 
     /**
@@ -106,7 +121,13 @@ contract FlightSuretyData {
         require(!isDuplicate, "Caller has already called this function.");
 
         multiCalls.push(msg.sender);
-            if (multiCalls.length.div(airlineAccts.length).mul(100) >= VOTING_THRESHOLD) {
+
+        uint256 numberAgreedAirlines = multiCalls.length;
+        uint256 numberTotalAirlines = airlineAccts.length-1;
+        uint256 PercentageAirlinesAgreed = numberAgreedAirlines.mul(100).div(numberTotalAirlines);
+        emit PAirlinesAgreed(PercentageAirlinesAgreed, numberAgreedAirlines, numberTotalAirlines, airlineAccts);
+
+            if (PercentageAirlinesAgreed >= VOTING_THRESHOLD) {
                 operational = mode;   
                 multiCalls = new address[](0);      
             }  
@@ -127,7 +148,8 @@ contract FlightSuretyData {
     */
     modifier requireIsAirline()
     {
-        require(airlines[msg.sender].isRegistered && airlines[msg.sender].isActive, "Only registered and active airline can register new ones!");
+        require(airlines[msg.sender].isRegistered, "Arlines can only be active if they are registered - Please register first!");
+        require(airlines[msg.sender].isActive, "Only active airlines can register new ones!");
         _;
     }
 
@@ -167,16 +189,18 @@ contract FlightSuretyData {
     */    
     function setOperatingStatus
                             (
-                                bool mode
+                                bool mode,
+                                string calldata reasonForStateChange
                             ) 
                             external
                             requireMultiPartyConsensus(mode)
-                            //isCallerAuthorized
-                            //requireIsAirline
-                            //requireIsOperational
+                            //isCallerAuthorized --> Does not make sense, as setOperatingStatus is called directly from Airlines and not from App contract!
+                            requireIsAirline
+                            //requireIsOperational --> Lock-out bug!!!
                             // requireContractOwner --> After implementation of Multi-party consensus no longer valid/necessary
     {   
-        require(mode != operational, "New mode must be different from existing mode");
+        //require(mode != operational, "New mode must be different from existing mode");
+        emit StateChanged(mode, reasonForStateChange);
     }
 
     /**
@@ -197,7 +221,8 @@ contract FlightSuretyData {
     * @dev Gets the amount of airlines already registered
     */    
     function numberRegisteredAirlines() external view  requireIsOperational returns(uint256) {
-        return airlineAccts.length;
+        uint256 lengthAirlineArray = airlineAccts.length;
+        return lengthAirlineArray;
     }
 
     /**
@@ -235,7 +260,7 @@ contract FlightSuretyData {
                             external
                             payable
                             requireIsOperational
-                            rateLimit(payoutLimit)
+                            //rateLimit(payoutLimit)
                             //requireIsAirline
     {
         require(amountPaid == 10 ether, "The amount must be equal to 10 ether (ETH)!");
@@ -265,13 +290,13 @@ contract FlightSuretyData {
     */   
     function registerAirline
                             (   
-                                address addressAirline,
+                                address payable addressAirline,
                                 string calldata nameAirline
                             )
                             external
                             //requireMultiPartyConsensus(mode) 
                             isCallerAuthorized
-                            requireIsAirline
+                            //requireIsAirline
                             requireIsOperational
     {
         airlines[addressAirline] = Airline({
@@ -283,6 +308,25 @@ contract FlightSuretyData {
         });
 
         airlineAccts.push(addressAirline);
+    }
+
+    /**
+    * @dev Activate already registered Airline
+    *      Can only be called from FlightSuretyApp contract
+    *
+    */   
+    function activateAirline
+                            (   
+                                address payable addressAirline,
+                                uint256 amountPaid
+                            )
+                            external
+                            //requireMultiPartyConsensus(mode) 
+                            isCallerAuthorized
+                            requireIsOperational
+    {
+        airlines[addressAirline].isActive = true;
+        airlines[addressAirline].fund = amountPaid;
     }
 
    /**

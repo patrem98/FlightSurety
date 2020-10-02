@@ -44,7 +44,7 @@ contract('Oracles', async (accounts) => {
     // ACT
 
     // Since the Index assigned to each test account is opaque by design
-    // loop through all the accounts and for each account, all its Indexes (indices?)
+    // loop through all the accounts and for each account, all its indices
     // and submit a response. The contract will reject a submission if it was
     // not requested so while sub-optimal, it's a good test of that feature
     for(let a=1; a<TEST_ORACLES_COUNT; a++) {
