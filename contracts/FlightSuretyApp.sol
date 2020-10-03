@@ -268,7 +268,7 @@ contract FlightSuretyApp {
     {
         bytes32 flightkey = getFlightKey(addressAirline, flight, timestamp);
        
-        //require(flights[flightkey].statusCode == STATUS_CODE_LATE_AIRLINE, "Airline is not late or delay is not cause by Airline mistake!" );
+        require(flights[flightkey].statusCode == STATUS_CODE_LATE_AIRLINE, "Airline is not late or delay is not cause by Airline mistake!" );
         
         flights[flightkey].refundAmount = flights[flightkey].paidAmount.mul(3).div(2);
 
@@ -303,7 +303,7 @@ contract FlightSuretyApp {
         flights[flightkey].refundAmount = 0;
 
         //Transfering amount to insuree's account
-        addressInsuree.transfer(refundAmount);
+        //addressInsuree.transfer(refundAmount);
 
         emit RefundWithdrawn(addressInsuree, addressAirline, flight, timestamp);
     }
@@ -372,7 +372,7 @@ contract FlightSuretyApp {
         require(flightSuretyData.IsAirlineRegistered(msg.sender), "Airline is not registered - please await voting!");
         require(amountFund == 10 ether, "The amount must be equal to 10 ether (ETH)!");
 
-        //flightSuretyData.fund(msg.sender, amountFund);
+        flightSuretyData.fund(msg.sender, amountFund);
         flightSuretyData.activateAirline(msg.sender, amountFund);
 
         emit AirlineActivated(msg.sender, flightSuretyData.getAirlineName(msg.sender));
@@ -635,7 +635,7 @@ interface FlightSuretyData {
     function IsAirlineRegistered (address addressAirline) external view returns(bool);
     function numberRegisteredAirlines() external view  returns(uint256); 
     function isOperational() external view returns(bool);
-    function fund(address addressRegisteredAirline,uint256 amountFund) external payable;
+    function fund(address payable addressRegisteredAirline,uint256 amountFund) external payable;
     function getAirlineName(address addressAirline) external view returns(string memory);
 
 }

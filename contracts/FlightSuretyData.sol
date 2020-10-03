@@ -24,6 +24,8 @@ contract FlightSuretyData {
     bool private operational = true;                                    // Blocks all state changes throughout the contract if false
     mapping(address => Airline) private airlines;                               // Mapping for storing user profiles
     address[] airlineAccts = new address[](0); 
+
+    address payable fundAddress;
     
     uint256 private constant VOTING_THRESHOLD = 50;    // Implemented voting mechanism bases on multi-party consensus                                      
 
@@ -263,11 +265,10 @@ contract FlightSuretyData {
                             //rateLimit(payoutLimit)
                             //requireIsAirline
     {
-        require(amountPaid == 10 ether, "The amount must be equal to 10 ether (ETH)!");
+        //require(amountPaid == 10 ether, "The amount must be equal to 10 ether (ETH)!");
 
         //fund(msg.sender, amountFund);
-
-        //addressAirline.transfer(amountPaid); --> Deployment of App contracts fails, when trying to transfer amount - not resolved?!!
+        //contractOwner.transfer(amountPaid);
 
         airlines[addressAirline] = Airline({
             isRegistered: true,
@@ -393,7 +394,7 @@ contract FlightSuretyData {
                             isCallerAuthorized
                             requireIsOperational
     {
-        addressRegisteredAirline.transfer(amountFund);
+        //fundAddress.transfer(amountFund);
 
         airlines[addressRegisteredAirline].isActive = true;
         airlines[addressRegisteredAirline].fund = amountFund; 

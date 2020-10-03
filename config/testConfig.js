@@ -31,7 +31,7 @@ var Config = async function(accounts) {
         owner: owner,
         firstAirline: firstAirline,
         weiMultiple: (new BigNumber(10)).pow(18),
-        testAddresses: testAddresses,
+        testAddresses: accounts,
         flightSuretyData: flightSuretyData,
         flightSuretyApp: flightSuretyApp
     }

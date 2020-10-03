@@ -222,6 +222,9 @@ contract('Flight Surety Tests', async (accounts) => {
     let Airline2 = currentAirlines[2];
     let Passenger1 = accounts[8];
 
+    //Checking balance before withdrawal
+    let balance1 = await web3.eth.getBalance(Passenger1);
+
     // ACT
     try {
         await config.flightSuretyApp.passengerRepayment("Flight 100", Airline2, 100);
@@ -232,11 +235,13 @@ contract('Flight Surety Tests', async (accounts) => {
     }
     let paidAmount = await config.flightSuretyApp.getPassengerPaidAmount.call("Flight 100", 100, Airline2);
     let refund = await config.flightSuretyApp.getRepaidAmountPassenger.call("Flight 100", 100, Airline2); 
-    let balance = await web3.eth.getBalance(Passenger1);
+
+    //Checking balance after withdrawal
+    let balance2 = await web3.eth.getBalance(Passenger1);
 
     // ASSERT
     assert.equal(refund, 1.5*paidAmount, "Passenger is not getting the 1.5x amount of his purchase as refund!");
-    assert.equal(refund, balance, "Passenger cannot withdraw correct amount!");
+    assert.equal(refund, (balance2-balance1), "Passenger cannot withdraw correct amount!");
   });
 
 });
