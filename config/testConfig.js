@@ -23,6 +23,8 @@ var Config = async function(accounts) {
     let owner = accounts[0];  
     let firstAirline = accounts[1];
 
+    //How can I deploy the contracts with a starting amount of 100Eth?
+
     let flightSuretyData = await FlightSuretyData.new();
     let flightSuretyApp = await FlightSuretyApp.new(flightSuretyData.address);
 
