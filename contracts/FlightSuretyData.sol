@@ -394,7 +394,7 @@ contract FlightSuretyData {
                             isCallerAuthorized
                             requireIsOperational
     {
-        //fundAddress.transfer(amountFund);
+        addressRegisteredAirline.transfer(amountFund);
 
         airlines[addressRegisteredAirline].isActive = true;
         airlines[addressRegisteredAirline].fund = amountFund; 

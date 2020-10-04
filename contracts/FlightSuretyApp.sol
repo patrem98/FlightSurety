@@ -303,7 +303,7 @@ contract FlightSuretyApp {
         flights[flightkey].refundAmount = 0;
 
         //Transfering amount to insuree's account
-        //addressInsuree.transfer(refundAmount);
+        addressInsuree.transfer(refundAmount);
 
         emit RefundWithdrawn(addressInsuree, addressAirline, flight, timestamp);
     }
