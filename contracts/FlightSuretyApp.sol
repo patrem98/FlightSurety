@@ -161,7 +161,7 @@ contract FlightSuretyApp {
     /**
     * @dev Event to signal the withdrawal of the refund in case of a delayed flight
     */
-    event RefundWithdrawn(address payable addressInsuree, address addressAirline, string flight, uint256 timestamp);
+    event RefundWithdrawn(address addressInsuree, address addressAirline, string flight, uint256 timestamp);
 
     /**
     * @dev Event to singal whether a certan Airline has paid the requested funds (10 ether)
@@ -182,6 +182,8 @@ contract FlightSuretyApp {
     * @dev Event to signal the successfull retrieval of the flight key
     */
     event FlightKey(string FlightKeyretreived);
+
+    event Check(string PassengerWCheck);
     /********************************************************************************************/
     /*                                       UTILITY FUNCTIONS                                  */
     /********************************************************************************************/
@@ -200,7 +202,7 @@ contract FlightSuretyApp {
                                         address addressAirline
                                     ) 
                             external 
-                            payable
+                            //payable
                             returns(uint256) 
     {
         bytes32 flightkey = getFlightKey(addressAirline, flight, timestamp);
@@ -244,11 +246,10 @@ contract FlightSuretyApp {
 
         require(flightSuretyData.IsAirlineActive(addressAirline), "Inputted address does not belong to an active Airline!");
 
-        emit InsurancePaid(msg.value, msg.sender, flight, timestamp);
-
         bytes32 flightkey = getFlightKey(addressAirline, flight, timestamp);
         flights[flightkey].paidAmount = msg.value; 
 
+        emit InsurancePaid(msg.value, msg.sender, flight, timestamp);
         
     }
 
@@ -268,8 +269,9 @@ contract FlightSuretyApp {
     {
         bytes32 flightkey = getFlightKey(addressAirline, flight, timestamp);
        
-        require(flights[flightkey].statusCode == STATUS_CODE_LATE_AIRLINE, "Airline is not late or delay is not cause by Airline mistake!" );
-        
+        //require(flights[flightkey].statusCode == STATUS_CODE_LATE_AIRLINE, "Airline is not late or delay is not cause by Airline mistake!" );
+        //--> only commented out for testing purposes (the flight used for testing is not delayed, for real usage this require-statement should however work)
+
         flights[flightkey].refundAmount = flights[flightkey].paidAmount.mul(3).div(2);
 
         emit RefundAmount(flights[flightkey].refundAmount);
@@ -287,13 +289,18 @@ contract FlightSuretyApp {
                                         address payable addressInsuree
                                     )
                                     external
-                                    payable
+                                    //payable
                                     requireIsOperational
                                     rateLimit(payoutLimit)
     {
+        emit Check("Passenger Withdrawal function!");
+        emit RefundWithdrawn(addressInsuree, addressAirline, flight, timestamp);
+
         bytes32 flightkey = getFlightKey(addressAirline, flight, timestamp);
+
         require(flights[flightkey].paidAmount != 0, "The passenger is not insured!");
         require(flights[flightkey].refundAmount != 0, "No refund existing!");
+        //require(flights[flightkey].refundAmount == msg.value, "Inputted value by passenger does not fit refundAmount!");
 
         //Temporary storing the amount that insuree can withdraw
         uint256 refundAmount = flights[flightkey].refundAmount;
@@ -301,6 +308,8 @@ contract FlightSuretyApp {
         //Resetting before transfer of money to prevent draining of funds
         flights[flightkey].paidAmount = 0;
         flights[flightkey].refundAmount = 0;
+
+        emit RefundWithdrawn(addressInsuree, addressAirline, flight, timestamp);
 
         //Transfering amount to insuree's account (as Data contract is used to store ether, it has to retrieved)
         flightSuretyData.refund(refundAmount, addressInsuree);
@@ -364,7 +373,7 @@ contract FlightSuretyApp {
     */ 
     function activateRegisteredAirline
                                     (
-                                        uint256 amountFund
+                                        //uint256 amountFund
                                         //address payable flightSuretyDataAddress 
                                     )
                                     external
@@ -373,14 +382,15 @@ contract FlightSuretyApp {
                                     requireIsRegistered(msg.sender)
     {
         require(flightSuretyData.IsAirlineRegistered(msg.sender), "Airline is not registered - please await voting!");
-        require(amountFund == 10 ether, "The amount must be equal to 10 ether (ETH)!");
+        require(msg.value == 10 ether, "The amount must be equal to 10 ether (ETH)!");
 
-        flightSuretyData.fund(msg.sender, amountFund);
+        flightSuretyData.fund(msg.sender, msg.value);
+        //flightSuretyData.fund.value(msg.value)(msg.sender);
 
         //transfer actual funds to data contract address (if not, data contract will not be able to transfer funds to respective address)!
         //flightSuretyDataAddress.transfer(amountFund);
         
-        flightSuretyData.activateAirline(msg.sender, amountFund);
+        flightSuretyData.activateAirline(msg.sender, msg.value);
 
         emit AirlineActivated(msg.sender, flightSuretyData.getAirlineName(msg.sender));
     }

@@ -72,7 +72,7 @@ contract('Flight Surety Tests', async (accounts) => {
         await config.flightSuretyApp.registerAirline(newAirline2, "Airline2", {from: config.firstAirline});
         
         //Ensuring that all newly registered airlines have paid the requested amount of 10 Ether as funding
-        await config.flightSuretyApp.activateRegisteredAirline(web3.utils.toWei("10", "ether"), {from: newAirline2});
+        await config.flightSuretyApp.activateRegisteredAirline({from: newAirline2, value: web3.utils.toWei("10", "ether")});
 
         //Change operating status if majority is reached
         await config.flightSuretyData.setOperatingStatus(false, "Something wrong with the registration process!", {from: config.firstAirline});
@@ -111,8 +111,8 @@ contract('Flight Surety Tests', async (accounts) => {
         await config.flightSuretyApp.registerAirline(newAirline4, "Airline4", {from: config.firstAirline});
 
         //Ensuring that all newly registered airlines have paid the requested amount of 10 Ether as funding
-        await config.flightSuretyApp.activateRegisteredAirline(web3.utils.toWei("10", "ether"), {from: newAirline3});
-        await config.flightSuretyApp.activateRegisteredAirline(web3.utils.toWei("10", "ether"), {from: newAirline4});
+        await config.flightSuretyApp.activateRegisteredAirline({from: newAirline3, value: web3.utils.toWei("10", "ether")});
+        await config.flightSuretyApp.activateRegisteredAirline({from: newAirline4, value: web3.utils.toWei("10", "ether")});
 
         //Change operating status if majority is reached
         await config.flightSuretyData.setOperatingStatus(false, "Something wrong with the registration process!", {from: newAirline3});
@@ -171,7 +171,7 @@ contract('Flight Surety Tests', async (accounts) => {
     /*ATTENTION: Although every test needs to re-define his invidual variables (e.g. Airlines), the total number of Airlines
     is stored, so that for the multiparty voting process the previous registered Airlines need to be taken into account for a majority!*/
 
-    await config.flightSuretyApp.registerAirline(newAirline6, "Airline 6", {from: config.firstAirline});
+    //await config.flightSuretyApp.registerAirline(newAirline6, "Airline 6", {from: config.firstAirline});
     await config.flightSuretyApp.registerAirline(newAirline6, "Airline 6", {from:  Airline2});
     await config.flightSuretyApp.registerAirline(newAirline6, "Airline 6", {from:  Airline3});
     await config.flightSuretyApp.registerAirline(newAirline6, "Airline 6", {from:  Airline4});
@@ -222,23 +222,29 @@ contract('Flight Surety Tests', async (accounts) => {
     let Airline2 = currentAirlines[2];
     let Passenger1 = accounts[8];
 
-    //Checking balance before withdrawal
+    //Checking balance before withdrawal and after payment
     let balance1 = await web3.eth.getBalance(Passenger1);
 
     // ACT
     try {
+        await config.flightSuretyApp.passengerPayment("Flight 100", Airline2, 100, {from: Passenger1, value: web3.utils.toWei("1", "ether")});
         await config.flightSuretyApp.passengerRepayment("Flight 100", Airline2, 100);
-        await config.flightSuretyApp.passengerWithdrawal("Flight 100", Airline2, 100, Passenger1);
+        await config.flightSuretyApp.passengerWithdrawal("Flight 100", Airline2, 100, Passenger1, {from: Passenger1});
     }
     catch(e) {
 
     }
+    //let result = await config.flightSuretyApp.getPassengerPaidAmount.call("Flight 100", 100, Airline2);
     let paidAmount = await config.flightSuretyApp.getPassengerPaidAmount.call("Flight 100", 100, Airline2);
     let refund = await config.flightSuretyApp.getRepaidAmountPassenger.call("Flight 100", 100, Airline2); 
 
     //Checking balance after withdrawal
     let balance2 = await web3.eth.getBalance(Passenger1);
-
+    console.log(balance1);
+    console.log(balance2);
+    console.log(balance2-balance1);
+    console.log(refund);
+    //console.log(paidAmount);
     // ASSERT
     assert.equal(refund, 1.5*paidAmount, "Passenger is not getting the 1.5x amount of his purchase as refund!");
     assert.equal(refund, (balance2-balance1), "Passenger cannot withdraw correct amount!");

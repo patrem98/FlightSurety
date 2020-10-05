@@ -386,8 +386,8 @@ contract FlightSuretyData {
     */   
     function fund
                             (
-                                address addressRegisteredAirline,
-                                uint256 amountFund
+                                address addressRegisteredAirline
+                                //uint256 amountFund
                             )
                             external
                             payable
@@ -395,10 +395,10 @@ contract FlightSuretyData {
                             requireIsOperational
     {
         //transfer from exteranl account via app contract to data contract
-        fundAddress.transfer(amountFund);
+        address(this).transfer(msg.value);
 
         airlines[addressRegisteredAirline].isActive = true;
-        airlines[addressRegisteredAirline].fund = amountFund; 
+        airlines[addressRegisteredAirline].fund = msg.value; 
     }
 
     /**
