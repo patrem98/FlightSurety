@@ -386,7 +386,7 @@ contract FlightSuretyData {
     */   
     function fund
                             (
-                                address payable addressRegisteredAirline,
+                                address addressRegisteredAirline,
                                 uint256 amountFund
                             )
                             external
@@ -394,11 +394,29 @@ contract FlightSuretyData {
                             isCallerAuthorized
                             requireIsOperational
     {
-        //transfer from data contract to given address
+        //transfer from exteranl account via app contract to data contract
         fundAddress.transfer(amountFund);
 
         airlines[addressRegisteredAirline].isActive = true;
         airlines[addressRegisteredAirline].fund = amountFund; 
+    }
+
+    /**
+    * @dev Refunding, in case of delayed flight.
+    *
+    */   
+    function refund
+                            (
+                                uint256 refundAmount,
+                                address payable addressInsuree
+                            )
+                            external
+                            payable
+                            isCallerAuthorized
+                            requireIsOperational
+    {
+        //transfer from data contract to given address
+        addressInsuree.transfer(refundAmount);
     }
 
     /*function getFlightKey

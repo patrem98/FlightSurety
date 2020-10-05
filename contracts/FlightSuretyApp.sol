@@ -302,8 +302,9 @@ contract FlightSuretyApp {
         flights[flightkey].paidAmount = 0;
         flights[flightkey].refundAmount = 0;
 
-        //Transfering amount to insuree's account
-        addressInsuree.transfer(refundAmount);
+        //Transfering amount to insuree's account (as Data contract is used to store ether, it has to retrieved)
+        flightSuretyData.refund(refundAmount, addressInsuree);
+        //addressInsuree.transfer(refundAmount);
 
         emit RefundWithdrawn(addressInsuree, addressAirline, flight, timestamp);
     }
@@ -642,5 +643,6 @@ interface FlightSuretyData {
     function numberRegisteredAirlines() external view  returns(uint256); 
     function isOperational() external view returns(bool);
     function fund(address payable addressRegisteredAirline,uint256 amountFund) external payable;
+    function refund(uint256 refundAmount, address payable addressInsuree) external payable;
     function getAirlineName(address addressAirline) external view returns(string memory);
 }
