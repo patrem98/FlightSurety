@@ -322,7 +322,7 @@ contract FlightSuretyApp {
                             AirlineIsActive
                             //returns(bool success, uint256 votes)
     {        
-        if(flightSuretyData.numberRegisteredAirlines()-1 <= NUMBER_AIRLINES_THRESHOLD) {
+        if(flightSuretyData.numberRegisteredAirlines()-1 < NUMBER_AIRLINES_THRESHOLD) {
 
             flightSuretyData.registerAirline(addressAirline, nameAirline);
 

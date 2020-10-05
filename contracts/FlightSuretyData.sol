@@ -395,7 +395,7 @@ contract FlightSuretyData {
                             requireIsOperational
     {
         //transfer from data contract to given address
-        addressRegisteredAirline.transfer(amountFund);
+        fundAddress.transfer(amountFund);
 
         airlines[addressRegisteredAirline].isActive = true;
         airlines[addressRegisteredAirline].fund = amountFund; 
