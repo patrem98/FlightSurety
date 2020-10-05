@@ -70,7 +70,7 @@ contract('Flight Surety Tests', async (accounts) => {
     // ACT
         //Registering one new airline in order to simulate a two-third majority 
         await config.flightSuretyApp.registerAirline(newAirline2, "Airline2", {from: config.firstAirline});
-
+        
         //Ensuring that all newly registered airlines have paid the requested amount of 10 Ether as funding
         await config.flightSuretyApp.activateRegisteredAirline(web3.utils.toWei("10", "ether"), {from: newAirline2});
 

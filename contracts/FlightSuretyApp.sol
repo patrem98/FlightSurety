@@ -364,8 +364,10 @@ contract FlightSuretyApp {
     function activateRegisteredAirline
                                     (
                                         uint256 amountFund
+                                        //address payable flightSuretyDataAddress 
                                     )
                                     external
+                                    payable
                                     rateLimit(payoutLimit)
                                     requireIsRegistered(msg.sender)
     {
@@ -373,6 +375,10 @@ contract FlightSuretyApp {
         require(amountFund == 10 ether, "The amount must be equal to 10 ether (ETH)!");
 
         flightSuretyData.fund(msg.sender, amountFund);
+
+        //transfer actual funds to data contract address (if not, data contract will not be able to transfer funds to respective address)!
+        //flightSuretyDataAddress.transfer(amountFund);
+        
         flightSuretyData.activateAirline(msg.sender, amountFund);
 
         emit AirlineActivated(msg.sender, flightSuretyData.getAirlineName(msg.sender));
@@ -637,5 +643,4 @@ interface FlightSuretyData {
     function isOperational() external view returns(bool);
     function fund(address payable addressRegisteredAirline,uint256 amountFund) external payable;
     function getAirlineName(address addressAirline) external view returns(string memory);
-
 }
