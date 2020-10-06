@@ -219,35 +219,53 @@ contract('Flight Surety Tests', async (accounts) => {
     
     // ARRANGE
     let currentAirlines = await config.flightSuretyData.getAirlines();
-    let Airline2 = currentAirlines[2];
+    let Airline6 = currentAirlines[2];
     let Passenger1 = accounts[8];
 
     //Checking balance before withdrawal and after payment
-    let balance1 = await web3.eth.getBalance(Passenger1);
+    let balance1 = await web3.eth.getBalance(Passenger1);     
 
     // ACT
-    try {
-        await config.flightSuretyApp.passengerPayment("Flight 100", Airline2, 100, {from: Passenger1, value: web3.utils.toWei("1", "ether")});
-        await config.flightSuretyApp.passengerRepayment("Flight 100", Airline2, 100);
-        await config.flightSuretyApp.passengerWithdrawal("Flight 100", Airline2, 100, Passenger1, {from: Passenger1});
-    }
-    catch(e) {
+    //try {
+        //Sending additional 10 ether to the data contract (by a already registered and active Airline), in order to have enough ether to pay the refund!
+        await config.flightSuretyData.fund(Airline6, {value: web3.utils.toWei("10", "ether")});
 
-    }
-    //let result = await config.flightSuretyApp.getPassengerPaidAmount.call("Flight 100", 100, Airline2);
-    let paidAmount = await config.flightSuretyApp.getPassengerPaidAmount.call("Flight 100", 100, Airline2);
-    let refund = await config.flightSuretyApp.getRepaidAmountPassenger.call("Flight 100", 100, Airline2); 
+        //await config.flightSuretyApp.activateRegisteredAirline({from: Airline6, value: web3.utils.toWei("10", "ether")});
+       
+        await config.flightSuretyApp.passengerPayment("Flight 100", Airline6, 100, {from: Passenger1, value: web3.utils.toWei("1", "ether")});
+        await config.flightSuretyApp.passengerRepayment("Flight 100", Airline6, 100);
+        await config.flightSuretyApp.passengerWithdrawal("Flight 100", Airline6, 100, Passenger1);
+    /*}
+    catch(e) {
+        console.log("Error!");
+    }*/
+    let paidAmount = await config.flightSuretyApp.getPassengerPaidAmount.call("Flight 100", 100, Airline6);
+    let refund = await config.flightSuretyApp.getRepaidAmountPassenger.call("Flight 100", 100, Airline6); 
 
     //Checking balance after withdrawal
     let balance2 = await web3.eth.getBalance(Passenger1);
-    console.log(balance1);
+
+    /*console.log(balance1);
     console.log(balance2);
     console.log(balance2-balance1);
-    console.log(refund);
+    console.log(balance3);
+    console.log(balance4);
+    console.log(balance4-balance3);*/
+    
+    //console.log(refund);
     //console.log(paidAmount);
+
     // ASSERT
+    
     assert.equal(refund, 1.5*paidAmount, "Passenger is not getting the 1.5x amount of his purchase as refund!");
-    assert.equal(refund, (balance2-balance1), "Passenger cannot withdraw correct amount!");
+    
+    //Alternative assert method (see all available methods at "Assert.sol" - https://github.com/trufflesuite/truffle/blob/develop/packages/core/lib/testing/Assert.sol)
+    /*Test scheme: The passenger has invested 1 ether in a flight insurance. The flight is delayed, therefore he gets 1.5 ether back as refund.
+    In total his balances before and after the payment and refund should therefore differ +0.5 ether (passenger has gained 0.5 ether). As however, the transaction
+    costs a bit of gas, the refund amount wont be exactly 0.5 ether but a bit less. The assert function therefore makes sure, that the error is smaller then 1 ether, thereby
+    making sure that 0.5 ether were indead sent as refund. Is there a way of sending exactly 0.5 ether?*/
+
+    assert.isTrue((web3.utils.toWei("0.5", "ether")-(balance2-balance1)) <= web3.utils.toWei("1", "ether"), "Passenger cannot withdraw correct amount!");
   });
 
 });

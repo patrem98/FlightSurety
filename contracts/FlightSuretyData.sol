@@ -45,6 +45,8 @@ contract FlightSuretyData {
     */
     event StateChanged(bool mode, string Reason);
 
+    event EtherDataContract(uint etherContract, uint rAmount);
+
     /**
     * @dev Event to signal the change of the state of the contract
     */
@@ -391,11 +393,14 @@ contract FlightSuretyData {
                             )
                             external
                             payable
-                            isCallerAuthorized
-                            requireIsOperational
+                            //isCallerAuthorized1
+                            //requireIsOperational1
     {
         //transfer from exteranl account via app contract to data contract
-        address(this).transfer(msg.value);
+        /*address(this).transfer(msg.value); --> This statement leads to a runtime error and is unnecessary, 
+        as ether is automatically stored in the contract itslef!*/
+
+        emit EtherDataContract(address(this).balance, msg.value);
 
         airlines[addressRegisteredAirline].isActive = true;
         airlines[addressRegisteredAirline].fund = msg.value; 
@@ -411,10 +416,14 @@ contract FlightSuretyData {
                                 address payable addressInsuree
                             )
                             external
-                            payable
+                            //payable
                             isCallerAuthorized
                             requireIsOperational
     {
+        emit EtherDataContract(address(this).balance, refundAmount);
+
+        require(address(this).balance >= refundAmount, "Data contract has not enough ether!");
+
         //transfer from data contract to given address
         addressInsuree.transfer(refundAmount);
     }

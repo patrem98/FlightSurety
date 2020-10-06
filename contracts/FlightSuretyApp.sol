@@ -370,7 +370,13 @@ contract FlightSuretyApp {
     /**
     * @dev Add an airline to the registration queue
     *
-    */ 
+    */
+
+    /*NOTE: When to declare a function as payable and when to declare an address as payable 
+    - address payable, if: ether should be send to the specified address
+    - function fund() external payable, if: declared function should receive ether
+    */
+
     function activateRegisteredAirline
                                     (
                                         //uint256 amountFund
