@@ -23,9 +23,45 @@
 
         <div id="display-wrapper" class="top-20">
         </div>
+
+        <!-- Airlines (RegisterAirline, ActivateAirline, getActiveAirlines)-->
         <div class="row top-20">
-            <label class="form">Flight</label> <input type="text" id="flight-number"> <btn class="btn btn-primary" id="submit-oracle">Submit to Oracles</btn>
+            <label class="from">Registering Airline | -</label>- Input Airline Address:<input type="text" id="address-airline"/><btn class="btn btn-primary" id="submit-airline">RegisterAirline</btn>
         </div>
+
+        <div class="row top-20">
+            <label class="from">Funding Airline | -</label>- Input 10 Ether for funding:<input type="text" id=""/><btn class="btn btn-primary" id="">ActivateAirline</btn> 
+        </div>
+
+        <div class="row top-20">
+            <label class="from">getRegisteredAirlines</label> 
+        </div>
+
+        <!-- Flights (submitFlight, getFlightStatus)-->
+
+        <div class="row top-20">
+            <label class="form">Submitting Flight</label><input type="text" id="flight-number"><btn class="btn btn-primary" id="submit-oracle">Submit to Oracles</btn>
+        </div>
+
+        <div class="row top-20">
+            <label class="from">getFlightStatus</label> 
+        </div>
+
+        <!-- Insurances (BuyInsurance, getInsurancePaid, WithdrawRefund)-->
+
+        <div class="row top-20">
+            <label class="from">Buying Insurance | -</label>- Input up to 1 Ether:<input type="text" id=""/><btn class="btn btn-primary" id="">BuyInsurance</btn>  
+        </div>
+
+        <div class="row top-20">
+            <label class="from">getInsurancePaid</label> 
+        </div>
+
+        <div class="row top-20">
+            <label class="from">Withdrawing Refund | -</label>- Input your account address:<input type="text" id=""/><btn class="btn btn-primary" id="">WithdrawRefund</btn> 
+        </div>
+
+
     </main>
 
 </body>

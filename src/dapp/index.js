@@ -1,5 +1,4 @@
-
-import DOM from './dom';
+import DOM from './dom'; //Document Object Model (DOM) - programming API for HTML and XML documents, defines logical structure of documents and the way it is accessed and manipulated.
 import Contract from './contract';
 import './flightsurety.css';
 
@@ -18,6 +17,10 @@ import './flightsurety.css';
     
 
         // User-submitted transaction
+
+        //++++++++++++++++++ Flight-related functions +++++++++++++++++++++++++++
+
+        //Fetching Flight Status
         DOM.elid('submit-oracle').addEventListener('click', () => {
             let flight = DOM.elid('flight-number').value;
             // Write transaction
@@ -25,6 +28,27 @@ import './flightsurety.css';
                 display('Oracles', 'Trigger oracles', [ { label: 'Fetch Flight Status', error: error, value: result.flight + ' ' + result.timestamp} ]);
             });
         })
+
+        //Submitting Flight
+
+
+        //++++++++++++++++++ Airline-related functions +++++++++++++++++++++++++++
+
+        //Registering Airline (from index.html - address-airline, submit-airline)
+        DOM.elid('submit-airline').addEventListener('click', () => {
+            let airline = DOM.elid('address-airline').value;
+            //Write transaction
+            contract.registerAirline(airline, (error, result) => {
+                display();
+            });
+        })
+
+        //Activating Airline
+
+
+
+
+        //++++++++++++++++++ Passenger-related functions +++++++++++++++++++++++++++
     
     });
     
