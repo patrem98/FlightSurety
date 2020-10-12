@@ -21,30 +21,36 @@ import './flightsurety.css';
         //++++++++++++++++++ Flight-related functions +++++++++++++++++++++++++++
 
         //Fetching Flight Status
-        DOM.elid('submit-oracle').addEventListener('click', () => {
+        /*DOM.elid('submit-oracle').addEventListener('click', () => {
             let flight = DOM.elid('flight-number').value;
             // Write transaction
             contract.fetchFlightStatus(flight, (error, result) => {
                 display('Oracles', 'Trigger oracles', [ { label: 'Fetch Flight Status', error: error, value: result.flight + ' ' + result.timestamp} ]);
             });
-        })
+        });*/
 
         //Submitting Flight
-
 
         //++++++++++++++++++ Airline-related functions +++++++++++++++++++++++++++
 
         //Registering Airline (from index.html - address-airline, submit-airline)
-        DOM.elid('submit-airline').addEventListener('click', () => {
-            let airline = DOM.elid('address-airline').value;
+        DOM.elid('register-airline').addEventListener('click', () => {
+            let addressAirline = DOM.elid('address-airline').value;
+            let nameAirline = DOM.elid('name-airline').value;
             //Write transaction
-            contract.registerAirline(airline, (error, result) => {
-                display();
+            contract.registerAirline(addressAirline, nameAirline, (error, result) => {
+                alert("New Airline registered!");
             });
-        })
+        });
 
         //Activating Airline
-
+        /*DOM.elid('activate-airline').addEventListener('click', () => {
+            let airline = DOM.elid('funding-airline').value;
+            //Write transaction
+            contract.activateRegisteredAirline(airline, (error, result) => {
+                display();
+            });
+        })*/
 
 
 

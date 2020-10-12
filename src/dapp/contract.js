@@ -1,5 +1,4 @@
 import FlightSuretyApp from '../../build/contracts/FlightSuretyApp.json';
-import FlightSuretyData from '../../build/contracts/FlightSuretyData.json';
 import Config from './config.json';
 import Web3 from 'web3';
 
@@ -8,8 +7,7 @@ export default class Contract {
 
         let config = Config[network];
         this.web3 = new Web3(new Web3.providers.HttpProvider(config.url));
-        this.flightSuretyApp = new this.web3.eth.Contract(FlightSuretyApp.abi, config.appAddress);
-        this.flightSuretyData = new this.web3.eth.Contract(FlightSuretyData.abi, config.dataAddress);
+        this.flightSuretyApp = new this.web3.eth.Contract(FlightSuretyApp.abi, config.appAddress, config.dataAddress);
         this.initialize(callback);
         this.owner = null;
         this.airlines = [];
@@ -17,7 +15,7 @@ export default class Contract {
     }
 
     initialize(callback) {
-        this.web3.eth.getAccounts((error, accts) => {
+        this.web3.eth.getAccounts(async (error, accts) => {
            
             this.owner = accts[0];
 
@@ -44,9 +42,9 @@ export default class Contract {
 
     //++++++++++++++++++ Flight-related functions +++++++++++++++++++++++++++
 
-    registerFlight()
+    //registerFlight()
 
-    processFlightStatus()
+    //processFlightStatus()
     
     fetchFlightStatus(flight, callback) {
         let self = this;
@@ -64,22 +62,31 @@ export default class Contract {
 
     //++++++++++++++++++ Airline-related functions +++++++++++++++++++++++++++
 
-    registerFirstAirline()
+    //registerFirstAirline()
 
-    registerAirline()
+    registerAirline(addressAirline, nameAirline, callback) {
+        let self = this;
+        
+        self.flightSuretyApp.methods
+            .registerAirline(addressAirline, nameAirline)
+            .send({from: self.airlines[1]}, (error, result) => {
+                callback(error, addressAirline);
+                alert("New Airline on BC now!");
+            }); 
+    }
 
-    activateRegisteredAirline()
+    //activateRegisteredAirline()
 
-    getAirlines()
+    //getAirlines()
 
     //++++++++++++++++++ Passenger-related functions +++++++++++++++++++++++++++
 
-    passengerPayment()
+    //passengerPayment()
 
-    passengerRepayment()
+    //passengerRepayment()
 
-    passengerWithdrawal()
+    //passengerWithdrawal()
     
-    getPassengerPaidAmount()
+    //getPassengerPaidAmount()
 
 }
