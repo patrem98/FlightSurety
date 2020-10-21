@@ -23,7 +23,7 @@ contract FlightSuretyData {
     address payable contractOwner;                                      // Account used to deploy contract
     bool private operational = true;                                    // Blocks all state changes throughout the contract if false
     mapping(address => Airline) private airlines;                               // Mapping for storing user profiles
-    address[] airlineAccts = new address[](0); 
+    address[] public airlineAccts = new address[](0); 
 
     address payable fundAddress;
     
@@ -179,7 +179,7 @@ contract FlightSuretyData {
     * @return A bool that is the current operating status
     */      
     function isOperational() 
-                            external 
+                            public 
                             view 
                             returns(bool) 
     {
@@ -224,8 +224,9 @@ contract FlightSuretyData {
     /**
     * @dev Gets the amount of airlines already registered
     */    
-    function numberRegisteredAirlines() external view  requireIsOperational returns(uint256) {
+    function numberRegisteredAirlines() external view returns(uint256) {
         uint256 lengthAirlineArray = airlineAccts.length;
+        //uint256 lengthAirlineArray = 5;
         return lengthAirlineArray;
     }
 
@@ -300,7 +301,7 @@ contract FlightSuretyData {
                             //requireMultiPartyConsensus(mode) 
                             isCallerAuthorized
                             //requireIsAirline
-                            requireIsOperational
+                            //requireIsOperational
     {
         airlines[addressAirline] = Airline({
             isRegistered: true,

@@ -189,10 +189,12 @@ contract FlightSuretyApp {
     /********************************************************************************************/
 
     function isOperational() 
-                            external 
+                            public
+                            view
                             returns(bool) 
     {
-        return true;  // Modify to call data contract's status
+        //return true;  // Modify to call data contract's status
+        return flightSuretyData.isOperational();
     }
 
     //In order to make sure that amount paid by user is correct stored (see flightSurety.js)
@@ -332,14 +334,14 @@ contract FlightSuretyApp {
                             AirlineIsActive
                             //returns(bool success, uint256 votes)
     {        
-        if(flightSuretyData.numberRegisteredAirlines()-1 < NUMBER_AIRLINES_THRESHOLD) {
+        if(flightSuretyData.numberRegisteredAirlines() < NUMBER_AIRLINES_THRESHOLD) {
 
             flightSuretyData.registerAirline(addressAirline, nameAirline);
 
             emit AirlineRegistered(addressAirline, nameAirline);
 
         }
-        else {
+       /* else {
 
             emit MultipartyRegistrationProcess("From now on every airline needs to be voted in!");
 
@@ -363,8 +365,9 @@ contract FlightSuretyApp {
                     multiCalls = new address[](0);      
                 }
 
-            }
+            }*/
             //return (success, 0);
+            //flightSuretyData.registerAirline(addressAirline, nameAirline);
     }
 
     /**

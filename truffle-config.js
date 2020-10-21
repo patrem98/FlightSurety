@@ -3,18 +3,18 @@ const HDWalletProvider = require('truffle-hdwallet-provider');
 
 //const fs = require('fs');
 //const mnemonic = fs.readFileSync(".secret").toString().trim();
-const mnemonic = "target wheel foot believe wrist rapid clock horse educate someone perfect frame";
+//const mnemonic = "target wheel foot believe wrist rapid clock horse educate someone perfect frame";
 
 module.exports = {
  networks: {
    development: {
      host: "127.0.0.1",
-     port: 9545,
-     accounts: 50, /*If this does not amount of test account to 50, 
+     port: 8545,
+     /*accounts: 50, If this does not amount of test account to 50, 
                     explicitly use ganache-cli by typing "ganache-cli -l 9999999999999 -g 1 -a 50 -e 10000". 
                     -a 50 specifies number of accounts! --> Relevant, because 20 oracles are used and need
                     more then the standard 10 test accounts!*/
-     network_id: "5777" // Match any network id
+     network_id: '*' // Match any network id
    },
  
  /*rinkeby: {

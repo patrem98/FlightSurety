@@ -21,13 +21,13 @@ import './flightsurety.css';
         //++++++++++++++++++ Flight-related functions +++++++++++++++++++++++++++
 
         //Fetching Flight Status
-        /*DOM.elid('submit-oracle').addEventListener('click', () => {
+        DOM.elid('submit-oracle').addEventListener('click', () => {
             let flight = DOM.elid('flight-number').value;
             // Write transaction
             contract.fetchFlightStatus(flight, (error, result) => {
                 display('Oracles', 'Trigger oracles', [ { label: 'Fetch Flight Status', error: error, value: result.flight + ' ' + result.timestamp} ]);
             });
-        });*/
+        });
 
         //Submitting Flight
 
@@ -39,23 +39,69 @@ import './flightsurety.css';
             let nameAirline = DOM.elid('name-airline').value;
             //Write transaction
             contract.registerAirline(addressAirline, nameAirline, (error, result) => {
+                console.log(error,result);
                 alert("New Airline registered!");
             });
         });
 
         //Activating Airline
-        /*DOM.elid('activate-airline').addEventListener('click', () => {
-            let airline = DOM.elid('funding-airline').value;
+        DOM.elid('activate-airline').addEventListener('click', () => {
+            let prizePaid = DOM.elid('funding-airline').value;
             //Write transaction
-            contract.activateRegisteredAirline(airline, (error, result) => {
-                display();
+            contract.activateRegisteredAirline(prizePaid, (error, result) => {
+                console.log(error, result);
+                alert("Airline activated!");
             });
-        })*/
+        })
 
-
+        //Getting registered Airlines
+        DOM.elid('get-airlines').addEventListener('click', () => {
+            contract.getAirlines((error, result) => {
+                console.log(error,result);
+              //display('Already registered Airlines:', [ { label: 'Already registered Airlines:', error: error, value: result[1]} ]);
+                alert(result);
+            });
+        })
 
         //++++++++++++++++++ Passenger-related functions +++++++++++++++++++++++++++
-    
+
+        //Purchasing insurance
+        DOM.elid('buying-insurance').addEventListener('click', () => {
+            let prizePaid = DOM.elid('buy').value;
+            let flight = DOM.elid('flight').value;
+            let addressAirline = DOM.elid('address-airline').value;
+            let timestamp = DOM.elid('timestamp').value;
+
+            //Write transaction
+            contract.passengerPayment(flight, addressAirline, timestamp, prizePaid, (error, result) => {
+                console.log(error, result);
+                alert("Insurance paid!");
+            });
+        })
+            
+        //Withdraw refund
+        /*passengerRepayment()-function must be called before passenger withdrawal by the 
+        respective airline (via cli, no front-end implemented (yet))*/
+        DOM.elid('withdraw-refund').addEventListener('click', () => {
+            let flight = DOM.elid('flight').value;
+            let addressAirline = DOM.elid('address-airline').value;
+            let timestamp = DOM.elid('timestamp').value;
+
+            //Write transaction
+            contract.passengerWithdrawal(flight, addressAirline, timestamp, prizePaid, (error, result) => {
+                console.log(error, result);
+                alert("Insurance paid!");
+            });
+        })
+
+        //Getting insurance paid by passenger
+        DOM.elid('get-insurance').addEventListener('click', () => {
+            contract.getPassengerPaidAmount((error, result) => {
+                console.log(error,result);
+                //display('Already registered Airlines:', [ { label: 'Already registered Airlines:', error: error, value: result[1]} ]);
+                alert(result);
+            });
+
     });
     
 

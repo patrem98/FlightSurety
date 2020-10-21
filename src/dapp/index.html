@@ -32,35 +32,43 @@
         </div>
 
         <div class="row top-20">
-            <label class="from">Funding Airline | -</label>- Input 10 Ether for funding:<input type="text" id="funding-airline"/><btn class="btn btn-primary" id="activate-airline">ActivateAirline</btn> 
+            <label class="from">Funding Airline | -</label>- Input 10 Ether for funding:
+            <input type="text" id="funding-airline"/><btn class="btn btn-primary" id="activate-airline">ActivateAirline</btn> 
         </div>
 
         <div class="row top-20">
-            <label class="from">getRegisteredAirlines</label> 
+            <btn class="btn btn-primary" id="get-airlines">getRegisteredAirlines</btn> 
         </div>
 
         <!-- Flights (submitFlight, getFlightStatus)-->
 
         <div class="row top-20">
-            <label class="form">Submitting Flight</label><input type="text" id="flight-number"><btn class="btn btn-primary" id="submit-oracle">Submit to Oracles</btn>
+            <label class="from">Submitting Flight: </label><input type="text" id="flight-number"><btn class="btn btn-primary" id="submit-oracle">Submit to Oracles</btn>
         </div>
 
         <div class="row top-20">
-            <label class="from">getFlightStatus</label> 
+            <btn class="btn btn-primary" id="get-flight">getFlightStatus</btn> 
         </div>
 
         <!-- Insurances (BuyInsurance, getInsurancePaid, WithdrawRefund)-->
 
         <div class="row top-20">
-            <label class="from">Buying Insurance | -</label>- Input up to 1 Ether:<input type="text" id=""/><btn class="btn btn-primary" id="">BuyInsurance</btn>  
+            <label class="from">Buying Insurance | -</label>- Input up to 1 Ether:
+            <input type="text" id="buying-insurance"/></label>- Input flight:
+            <input type="text" id="flight"/></label>- Input Airline Address:
+            <input type="text" id="address-airline"/></label>- Input timestamp:
+            <input type="text" id="timestamp"/><btn class="btn btn-primary" id="buy">BuyInsurance</btn>  
         </div>
 
         <div class="row top-20">
-            <label class="from">getInsurancePaid</label> 
+            <btn class="btn btn-primary" id="get-insurance">getInsurancePaid</label> 
         </div>
 
         <div class="row top-20">
-            <label class="from">Withdrawing Refund | -</label>- Input your account address:<input type="text" id=""/><btn class="btn btn-primary" id="">WithdrawRefund</btn> 
+            <label class="from">Withdrawing Refund | -</label>- Input flight:
+            <input type="text" id="flight"/></label>- Input Airline Address:
+            <input type="text" id="address-airline"/></label>- Input timestamp:
+            <input type="text" id="timestamp"/><btn class="btn btn-primary" id="buy">WithdrawFunds</btn> 
         </div>
 
 
