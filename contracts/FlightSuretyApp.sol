@@ -243,10 +243,10 @@ contract FlightSuretyApp {
                                     requireIsOperational
                                     rateLimit(payoutLimit)
                                     paidEnough
+                                    AirlineIsActive
     {
-        emit InsurancePaid(msg.value, msg.sender, flight, timestamp);
-
-        require(flightSuretyData.IsAirlineActive(addressAirline), "Inputted address does not belong to an active Airline!");
+        //emit InsurancePaid(msg.value, msg.sender, flight, timestamp);
+        //require(flightSuretyData.IsAirlineActive(addressAirline), "Inputted address does not belong to an active Airline!");
 
         bytes32 flightkey = getFlightKey(addressAirline, flight, timestamp);
         flights[flightkey].paidAmount = msg.value; 
@@ -415,8 +415,9 @@ contract FlightSuretyApp {
                                 )
                                 external
                                 requireIsOperational
+                                AirlineIsActive
     {
-        require(flightSuretyData.IsAirlineActive(msg.sender), "Airline is not active - please pay the requested amount!");
+        //require(flightSuretyData.IsAirlineActive(msg.sender), "Airline is not active - please pay the requested amount!");
         flights[getFlightKey(msg.sender, flight, timestamp)] = Flight({
             isRegistered: true,
             statusCode: 0,

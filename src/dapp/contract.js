@@ -62,27 +62,44 @@ export default class Contract {
 
     //++++++++++++++++++ Flight-related functions +++++++++++++++++++++++++++
 
-    //registerFlight()
-
-    //processFlightStatus()
-    
-    fetchFlightStatus(flight, callback) {
+    async registerFlight(flight, timestamp, callback){
         let self = this;
-        let payload = {
+        let currentAddress = await ethereum.request({method: 'eth_accounts'});
+
+        console.log(flight);
+        console.log(timestamp);
+
+        self.flightSuretyApp.methods
+        .registerFlight(flight, timestamp)
+        .send({from: currentAddress[0]}, (error, result) => {
+            console.log(error, result);
+            callback(error, result);
+        });
+
+    } 
+
+    //processFlightStatus() --> Done via cli (not implemented as front-end!)
+    
+    async fetchFlightStatus(addressAirline, flight, timestamp, callback) {
+        let self = this;
+        let currentAddress = await ethereum.request({method: 'eth_accounts'});
+        /*let payload = {
             airline: self.airlines[0],
             flight: flight,
             timestamp: Math.floor(Date.now() / 1000)
-        } 
+        }*/
+
         self.flightSuretyApp.methods
-            .fetchFlightStatus(payload.airline, payload.flight, payload.timestamp)
-            .send({ from: self.owner}, (error, result) => {
+            .fetchFlightStatus(addressAirline, flight, timestamp)
+            .send({ from: currentAddress[0]}, (error, result) => {
+                console.log(error, result);
                 callback(error, payload);
             });
     }
 
     //++++++++++++++++++ Airline-related functions +++++++++++++++++++++++++++
 
-    //registerFirstAirline() --> Done with truffle console (not implemented as front-end!)
+    //registerFirstAirline() --> Done via cli (not implemented as front-end!)
 
     async registerAirline(addressAirline, nameAirline, callback) {
         let self = this;

@@ -21,15 +21,26 @@ import './flightsurety.css';
         //++++++++++++++++++ Flight-related functions +++++++++++++++++++++++++++
 
         //Fetching Flight Status
-        DOM.elid('submit-oracle').addEventListener('click', () => {
-            let flight = DOM.elid('flight-number').value;
+        DOM.elid('get-status').addEventListener('click', () => {
+            let addressAirline = DOM.elid('address-airline').value;
+            let flight = DOM.elid('flight').value;
+            let timestamp = DOM.elid('timestamp').value;
             // Write transaction
-            contract.fetchFlightStatus(flight, (error, result) => {
+            contract.fetchFlightStatus(addressAirline, flight, timestamp, (error, result) => {
                 display('Oracles', 'Trigger oracles', [ { label: 'Fetch Flight Status', error: error, value: result.flight + ' ' + result.timestamp} ]);
             });
         });
 
         //Submitting Flight
+        DOM.elid('register-flight').addEventListener('click', () => {
+            let flight = DOM.elid('flight').value;
+            let timestamp = DOM.elid('timestamp').value;
+            //Write transaction
+            contract.registerFlight(flight, timestamp, (error, result) => {
+                console.log(error,result);
+                alert("New Flight registered!");
+            });
+        });
 
         //++++++++++++++++++ Airline-related functions +++++++++++++++++++++++++++
 

@@ -43,11 +43,16 @@
         <!-- Flights (submitFlight, getFlightStatus)-->
 
         <div class="row top-20">
-            <label class="from">Submitting Flight: </label><input type="text" id="flight-number"><btn class="btn btn-primary" id="submit-oracle">Submit to Oracles</btn>
+            <label class="from">Submitting Flight: </label>- Input flight:
+            <input type="text" id="flight"/></label>- Input timestamp:
+            <input type="text" id="timestamp"/><btn class="btn btn-primary" id="register-flight">Submit to Oracles</btn>
         </div>
 
         <div class="row top-20">
-            <btn class="btn btn-primary" id="get-flight">getFlightStatus</btn> 
+            <label class="from">Get Flight Status: </label>- Input flight:
+            <input type="text" id="flight"/></label>- Input Airline Address:
+            <input type="text" id="address-airline"/></label>- Input timestamp:
+            <input type="text" id="timestamp"/><btn class="btn btn-primary" id="get-status">getFlightStatus</btn> 
         </div>
 
         <!-- Insurances (BuyInsurance, getInsurancePaid, WithdrawRefund)-->
