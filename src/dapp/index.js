@@ -112,6 +112,7 @@ import './flightsurety.css';
                 //display('Already registered Airlines:', [ { label: 'Already registered Airlines:', error: error, value: result[1]} ]);
                 alert(result);
             });
+        })
 
     });
     
@@ -133,10 +134,3 @@ function display(title, description, results) {
     displayDiv.append(section);
 
 }
-
-
-
-
-
-
-

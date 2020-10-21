@@ -13,7 +13,7 @@ const ethEnabled = () => {
   return false;
 }*/
 
-//contract moduel API (pre-injecting contract ABI (?))
+//contract module API (pre-injecting contract ABI (?))
 export default class Contract {
     constructor(network, callback) {
 
