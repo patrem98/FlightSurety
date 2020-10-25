@@ -40,7 +40,7 @@ contract FlightSuretyApp {
     address[] multiCalls = new address[](0);     
 
     uint256 amountFirstFunding = 10 ether; 
-    address payable addressFirstAirline;      
+    //address payable addressFirstAirline;      
 
     struct Flight {
         bool isRegistered;
@@ -70,7 +70,7 @@ contract FlightSuretyApp {
     {
         contractOwner = dataContract;
         flightSuretyData = FlightSuretyData(contractOwner); //Initializing state variable
-        flightSuretyData.registerFirstAirline(addressFirstAirline, amountFirstFunding);
+        flightSuretyData.registerFirstAirline(msg.sender, amountFirstFunding);
         emit AirlineRegistered(contractOwner, "FirstAirline");
     }
 
@@ -341,7 +341,7 @@ contract FlightSuretyApp {
             emit AirlineRegistered(addressAirline, nameAirline);
 
         }
-       /* else {
+        else {
 
             emit MultipartyRegistrationProcess("From now on every airline needs to be voted in!");
 
@@ -365,7 +365,7 @@ contract FlightSuretyApp {
                     multiCalls = new address[](0);      
                 }
 
-            }*/
+            }
             //return (success, 0);
             //flightSuretyData.registerAirline(addressAirline, nameAirline);
     }

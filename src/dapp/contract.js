@@ -93,7 +93,7 @@ export default class Contract {
             .fetchFlightStatus(addressAirline, flight, timestamp)
             .send({ from: currentAddress[0]}, (error, result) => {
                 console.log(error, result);
-                callback(error, payload);
+                callback(error, result);
             });
     }
 

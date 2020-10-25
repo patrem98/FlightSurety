@@ -257,7 +257,7 @@ contract FlightSuretyData {
     * is able to call in. As the contract address of the App conract is computed out of the senders address and the nonce,
     * it is difficult (but probably also possible) to know it in advance in order to grant permission to the App contract to register the first Airline.
     */   
-    function registerFirstAirline
+  function registerFirstAirline
                             (   
                                 address payable addressAirline,
                                 uint256 amountPaid
@@ -268,14 +268,11 @@ contract FlightSuretyData {
                             //rateLimit(payoutLimit)
                             //requireIsAirline
     {
-        //require(amountPaid == 10 ether, "The amount must be equal to 10 ether (ETH)!");
-
-        //fund(msg.sender, amountFund);
-        //contractOwner.transfer(amountPaid);
+        require(amountPaid == 10 ether, "The amount must be equal to 10 ether (ETH)!");
 
         airlines[addressAirline] = Airline({
             isRegistered: true,
-            isActive: true,
+            isActive: false,
             addressAirline: addressAirline,
             airlineName: "First Airline",
             fund: amountPaid
@@ -285,6 +282,12 @@ contract FlightSuretyData {
 
         //Authorize App-contract for all other external functions
         authorizedCallers[msg.sender] = 1;
+
+        /*activateAirline(addressAirline, amountPaid);
+        ATTENTION: The "activateAirline()"-function is not yet visible at this point.
+        Therefore, although the first airline is directly registered as airline, it has 
+        (just as the other airlines) to spend 10 ETH for being activated before being able 
+        to register the first four airlines!*/
     }
    
    /**

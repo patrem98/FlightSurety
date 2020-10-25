@@ -1,9 +1,13 @@
 const webpack = require('webpack')
 const path = require('path')
+//const config = require('')
 const nodeExternals = require('webpack-node-externals')
 const StartServerPlugin = require('start-server-webpack-plugin')
 
 module.exports = {
+    
+    mode: 'development',
+    
     entry: [
         'webpack/hot/poll?1000',
         './src/server/index'
@@ -22,9 +26,9 @@ module.exports = {
     },
     plugins: [
         new StartServerPlugin('server.js'),
-        new webpack.config.optimization.namedModules(),
+        new webpack.NamedModulesPlugin(), //config.optimization.namedModules()
         new webpack.HotModuleReplacementPlugin(),
-        new webpack.config.optimization.noEmitOnErrors(),
+        new webpack.NoEmitOnErrorsPlugin(), //config.optimization.noEmitOnErrors()
         new webpack.DefinePlugin({
             "process.env": {
                 "BUILD_TARGET": JSON.stringify('server')
