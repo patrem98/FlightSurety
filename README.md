@@ -39,6 +39,14 @@ To build dapp for prod:
 
 Deploy the contents of the ./dapp folder
 
+## User interaction 
+
+In the given use-case there are primarily two involved parties, that each have their own requirements: The airline company & the passenger.
+On the basic front-end developped the section "Register, Activate & Output Airlines" is designed for various airline companies (with respect wallet-addresses). Airlines can that way be registered, activate themselves (by submitting 10 ether) and request all other registered airlines.
+
+The section "Register & Output Flights" is designed for both airlines and passengers. While the "register Flight" button is designated for airlines, the "getFlightStatus" button allows passengers to check the current status of their flight. The flight status will be displayed for the passenger and if the majority of oracles (simulated by server) output a delayed flight due to an airline error (status code = 20), the refund-amount will automatically be changed in the flights-data-structure (see FlightSuretyApp.sol). Attention: The refund-amount is however, not directly transferred to the passengers wallet (i.a.w. smart contract good practices). The passenger will withdraw the amount in a separate step.
+
+The section "Buying Insurance" and "Withdrawing Refund" are designed for passengers wanting to buy an insurance for a specific flight, wanting to know how much they paid for an insurance in the first place and (if a particular flight is delayed, due to the airline's fault) wanting to withdraw their refund (refund is received as ether in metamask-wallet).
 
 ## Resources
 
