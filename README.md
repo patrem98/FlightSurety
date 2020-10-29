@@ -48,6 +48,11 @@ The section "Register & Output Flights" is designed for both airlines and passen
 
 The section "Buying Insurance" and "Withdrawing Refund" are designed for passengers wanting to buy an insurance for a specific flight, wanting to know how much they paid for an insurance in the first place and (if a particular flight is delayed, due to the airline's fault) wanting to withdraw their refund (refund is received as ether in metamask-wallet).
 
+Some important notes:
+* Flights can only be registered by the respective airline (that's why no additional box for inputting the airline address is provided in the front-end)
+* The time of the flights has to inputted (both for registration and for demanding the flight-status) in the following format: Milliseconds elapsed since January 1, 1970 00:00:00 UTC. This is of course not an ideal solution, but should suffice for a simplified comparison of actual time (when passenger demands flight status) and time inputted by airline when registering the flight.
+
+
 ## Resources
 
 * [How does Ethereum work anyway?](https://medium.com/@preethikasireddy/how-does-ethereum-work-anyway-22d1df506369)
