@@ -4,6 +4,14 @@ pragma solidity >=0.6;
 // OpenZeppelin's SafeMath library, when used correctly, protects agains such bugs
 // More info: https://www.nccgroup.trust/us/about-us/newsroom-and-events/blog/2018/november/smart-contract-insecurity-bad-arithmetic/
 
+/*public - all can access
+
+external - Cannot be accessed internally, only externally
+
+internal - only this contract and contracts deriving from it can access
+
+private - can be accessed only from this contract*/
+
 import "../node_modules/openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 /************************************************** */
@@ -52,7 +60,7 @@ contract FlightSuretyApp {
         uint256 refundAmount;
     }
 
-    mapping(bytes32 => Flight) private flights;
+    mapping(bytes32 => Flight) public flights;
     
     /********************************************************************************************/
     /*                                       CONSTRUCTOR                                        */
@@ -261,11 +269,11 @@ contract FlightSuretyApp {
     */ 
     function passengerRepayment 
                                     (
-                                        string calldata flight,
+                                        string memory flight,
                                         address addressAirline,
                                         uint256 timestamp
                                     )
-                                    external
+                                    public
                                     requireIsOperational
                                     rateLimit(payoutLimit)
     {
@@ -418,7 +426,13 @@ contract FlightSuretyApp {
                                 AirlineIsActive
     {
         //require(flightSuretyData.IsAirlineActive(msg.sender), "Airline is not active - please pay the requested amount!");
-        flights[getFlightKey(msg.sender, flight, timestamp)] = Flight({
+        bytes32 flightkey = getFlightKey(msg.sender, flight, timestamp);
+
+        //flights[flightkey].timestamp = timestamp;
+        flights[flightkey].flight = flight;
+        flights[flightkey].airline = msg.sender;
+
+        /*flights[flightkey] = Flight({
             isRegistered: true,
             statusCode: 0,
             timestamp: timestamp,
@@ -426,10 +440,11 @@ contract FlightSuretyApp {
             flight: flight,
             paidAmount: 0,
             refundAmount: 0
-        });
+        });*/
 
         emit FlightRegistered(msg.sender, timestamp, flight);
     }
+
     
    /**
     * @dev Called after oracle has updated flight status
@@ -564,11 +579,12 @@ contract FlightSuretyApp {
                         (
                             uint8 index,
                             address airline,
-                            string calldata flight,
+                            string memory flight,
                             uint256 timestamp,
                             uint8 statusCode
                         )
-                        external
+                        public
+                        //returns(address, string memory, uint256, uint8)
     {
         require((oracles[msg.sender].indexes[0] == index) || (oracles[msg.sender].indexes[1] == index) || (oracles[msg.sender].indexes[2] == index), "Index does not match oracle request");
 
@@ -579,10 +595,22 @@ contract FlightSuretyApp {
 
         // Information isn't considered verified until at least MIN_RESPONSES
         // oracles respond with the *** same *** information
-        emit OracleReport(airline, flight, timestamp, statusCode);
+        /* Suggestion for more accurate Statuscode reporting: To make statuscode selection more accurate than 'only' having a fixed threshold of MIN_RESPONSES, it might
+        be more logical to take into account the amount of oracles that have matching indices and define the 
+        threshold dynamically, depending on the amount of oracles participating and e.g. letting it be at a min. of
+        51% */
+
+        
+        //return (airline, flight, timestamp, statusCode);
         if (oracleResponses[key].responses[statusCode].length >= MIN_RESPONSES) {
 
             emit FlightStatusInfo(airline, flight, timestamp, statusCode);
+            emit OracleReport(airline, flight, timestamp, statusCode);
+            //In case the majority of oracles respond with a statusCode = 20 (flight delay due to airline's fault), the insuree is automatically refunded!
+            if(statusCode == 20){
+
+                passengerRepayment(flight, airline, timestamp);
+            }
 
             // Handle flight status as appropriate
             processFlightStatus(airline, flight, timestamp, statusCode);

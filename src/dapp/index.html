@@ -25,14 +25,21 @@
         </div>
 
         <!-- Airlines (RegisterAirline, ActivateAirline, getActiveAirlines)-->
+        <br>
+        <h3 class="title" style="border-top: 1px solid white; 
+                                padding-top: 20px;
+                                border-bottom: 1px solid white; 
+                                padding-bottom: 20px;">Register, Activate & Output Airlines</h3> 
+        <br>
         <div class="row top-20">
-            <label class="from">Registering Airline | -</label>- Input Airline Address:
-            <input type="text" id="address-airline"/></label>- Input Airline Name:
+            <label class="from">Input Airline Address:</label>
+            <input type="text" id="address-airline"/>
+            <label class="from">Input Airline Name:</label>
             <input type="text" id="name-airline"/><btn class="btn btn-primary" id="register-airline">RegisterAirline</btn>
         </div>
 
         <div class="row top-20">
-            <label class="from">Funding Airline | -</label>- Input 10 Ether for funding:
+            <label class="from">Input 10 Ether for funding:</label>
             <input type="text" id="funding-airline"/><btn class="btn btn-primary" id="activate-airline">ActivateAirline</btn> 
         </div>
 
@@ -41,39 +48,70 @@
         </div>
 
         <!-- Flights (submitFlight, getFlightStatus)-->
-
+        <br>
+        <h3 class="title" style="border-top: 1px solid white; 
+                                padding-top: 20px;
+                                border-bottom: 1px solid white; 
+                                padding-bottom: 20px;">Register & Output Flights</h3> 
+        <br>
         <div class="row top-20">
-            <label class="from">Submitting Flight: </label>- Input flight:
-            <input type="text" id="flight"/></label>- Input timestamp:
-            <input type="text" id="timestamp"/><btn class="btn btn-primary" id="register-flight">Submit to Oracles</btn>
+            <label class="from">Input flight:</label>
+            <input type="text" id="flight"/>
+            <label class="from">Input timestamp:</label>
+            <input type="text" id="timestamp"/><btn class="btn btn-primary" id="register-flight">Register Flight</btn>
         </div>
 
         <div class="row top-20">
-            <label class="from">Get Flight Status: </label>- Input flight:
-            <input type="text" id="flight"/></label>- Input Airline Address:
-            <input type="text" id="address-airline"/></label>- Input timestamp:
-            <input type="text" id="timestamp"/><btn class="btn btn-primary" id="get-status">getFlightStatus</btn> 
+            <label class="from">Input flight:</label>
+            <input type="text" id="flight2"/>
+            <label class="from">Input Airline Address:</label>
+            <input type="text" id="address-airline2"/>
+            <btn class="btn btn-primary" id="get-status">getFlightStatus</btn> 
         </div>
+        <br>
 
         <!-- Insurances (BuyInsurance, getInsurancePaid, WithdrawRefund)-->
 
+        <h3 class="title" style="border-top: 1px solid white; 
+                                 padding-top: 20px;
+                                 border-bottom: 1px solid white; 
+                                 padding-bottom: 20px;">Buying Insurance </h3> 
         <div class="row top-20">
-            <label class="from">Buying Insurance | -</label>- Input up to 1 Ether:
-            <input type="text" id="buying-insurance"/></label>- Input flight:
-            <input type="text" id="flight"/></label>- Input Airline Address:
-            <input type="text" id="address-airline"/></label>- Input timestamp:
-            <input type="text" id="timestamp"/><btn class="btn btn-primary" id="buy">BuyInsurance</btn>  
+            <label class="from">Input up to 1 Ether:</label> 
+            <input type="text" id="buying-insurance"/> 
+            <label class="from">Input flight:</label> 
+            <input type="text" id="flight3"/> 
         </div>
 
         <div class="row top-20">
-            <btn class="btn btn-primary" id="get-insurance">getInsurancePaid</label> 
+            <label class="from">Input Airline Address: </label> 
+            <input type="text" id="address-airline3"/>
+            <label class="from">Input timestamp: </label> 
+            <input type="text" id="timestamp3"/>
+            <btn class="btn btn-primary" id="buy">BuyInsurance</btn>
         </div>
 
         <div class="row top-20">
-            <label class="from">Withdrawing Refund | -</label>- Input flight:
-            <input type="text" id="flight"/></label>- Input Airline Address:
-            <input type="text" id="address-airline"/></label>- Input timestamp:
-            <input type="text" id="timestamp"/><btn class="btn btn-primary" id="buy">WithdrawFunds</btn> 
+            <btn class="btn btn-primary" id="get-insurance">getInsurancePaid</btn> 
+        </div>
+
+        <br>
+        <h3 class="title" style="border-top: 1px solid white; 
+                                 padding-top: 20px;
+                                 border-bottom: 1px solid white; 
+                                 padding-bottom: 20px;">Withdrawing Refund </h3> 
+        <br>
+        <div class="row top-20">
+            <label class="from">Input flight:</label>
+            <input type="text" id="flight4"/>
+            <label class="from">Input Airline Address:</label>
+            <input type="text" id="address-airline4"/>
+        </div>
+
+        <div class="row top-20">
+            <label class="from">Input timestamp:</label>
+            <input type="text" id="timestamp4"/>
+            <btn class="btn btn-primary" id="buy">WithdrawFunds</btn> 
         </div>
 
 

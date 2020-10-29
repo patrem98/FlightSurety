@@ -2,6 +2,8 @@ import FlightSuretyApp from '../../build/contracts/FlightSuretyApp.json';
 import FlightSuretyData from '../../build/contracts/FlightSuretyData.json';
 import Config from './config.json';
 import Web3 from 'web3';
+//import express from 'express';
+import "babel-polyfill";
 
 /*const Web3 = require("web3");
 const ethEnabled = () => {
@@ -18,8 +20,9 @@ export default class Contract {
     constructor(network, callback) {
 
         let config = Config[network];
-        this.web3 = new Web3(new Web3.providers.HttpProvider(config.url));
-        //this.web3 = new Web3(new Web3.providers.WebsocketProvider(config.url.replace('http', 'ws')));
+        //this.web3 = new Web3(new Web3.providers.HttpProvider(config.url));
+        this.web3 = new Web3(new Web3.providers.WebsocketProvider(config.url.replace('http', 'ws')));
+        //this.web3 = new Web3(new Web3.providers.IpcProvider(config.url));
         this.flightSuretyApp = new this.web3.eth.Contract(FlightSuretyApp.abi, config.appAddress, config.dataAddress);
         this.flightSuretyData = new this.web3.eth.Contract(FlightSuretyData.abi, config.dataAddress);
         this.initialize(callback);
@@ -64,38 +67,55 @@ export default class Contract {
 
     async registerFlight(flight, timestamp, callback){
         let self = this;
-        let currentAddress = await ethereum.request({method: 'eth_accounts'});
 
         console.log(flight);
         console.log(timestamp);
+        //console.log(currentAddress[0]);
 
-        self.flightSuretyApp.methods
-        .registerFlight(flight, timestamp)
-        .send({from: currentAddress[0]}, (error, result) => {
+        let currentAddress = await ethereum.request({method: 'eth_accounts'});
+        self.flightSuretyApp.methods.registerFlight(flight, timestamp).send({from: currentAddress[0]}, (error, result) => {
             console.log(error, result);
             callback(error, result);
         });
 
     } 
 
-    //processFlightStatus() --> Done via cli (not implemented as front-end!)
+    //processFlightStatus() --> Done implicitly in submitOracleResponse()-function (see FlightSuretyApp.sol)
     
-    async fetchFlightStatus(addressAirline, flight, timestamp, callback) {
+    async fetchFlightStatus(addressAirline, flight, callback) {
         let self = this;
         let currentAddress = await ethereum.request({method: 'eth_accounts'});
-        /*let payload = {
-            airline: self.airlines[0],
+        let payload = {
+            airline: addressAirline,
             flight: flight,
             timestamp: Math.floor(Date.now() / 1000)
-        }*/
+        }
 
-        self.flightSuretyApp.methods
-            .fetchFlightStatus(addressAirline, flight, timestamp)
+            alert('Requesting flight status from oracles - please wait!');
+
+            /*function for the oraclereport event (emitted by the submitOracleResponse()-function) is set and
+            momentarily put to the side as no return values are yet visible*/
+            self.flightSuretyApp.events.OracleReport({})
+            .on('data', async function(event){  
+                console.log(event.returnValues);
+                let results = {
+                    flight: event.returnValues.flight,
+                    timestamp: event.returnValues.timestamp,
+                    status: event.returnValues.status
+                }
+                callback(results.flight, results.status, results.timestamp);
+            }).on('error', console.error);
+
+            /*due to asynchronous execution the flight status can be fetched and afterwards the event listener 
+            display the result to the user*/
+            await self.flightSuretyApp.methods
+            .fetchFlightStatus(payload.airline, payload.flight, payload.timestamp)
             .send({ from: currentAddress[0]}, (error, result) => {
                 console.log(error, result);
-                callback(error, result);
+                //callback(error, result);
             });
     }
+
 
     //++++++++++++++++++ Airline-related functions +++++++++++++++++++++++++++
 
@@ -105,29 +125,7 @@ export default class Contract {
         let self = this;
         let currentAddress = await ethereum.request({ method: 'eth_accounts' });
 
-        /*Retrieving current user address from metamask account! Make sure that first the right address is
-        retrieved and only after retrieving it the registerAirline function is called!*/
-        /*let getCurrentAddress = function(){
-            return new Promise(async function(resolve, reject) {
-                let currentAddress = await ethereum.request({ method: 'eth_accounts' });
-                resolve(currentAddress[0]);
-            });
-        }
-
-        let registerAirline = function(address){
-            return new Promise(function(resolve, reject) {
-                resolve(self.flightSuretyApp.methods
-                    .registerAirline(addressAirline, nameAirline)
-                    .send({from: address}));
-            });
-        }
-
-        getCurrentAddress().then(function(address){
-            return registerAirline(address);
-        });*/
-
-        //console.log(currentAddress[0]);
-        console.log(self.owner);
+        //console.log(self.owner);
         console.log(addressAirline);
         console.log(currentAddress[0]);
         console.log(nameAirline);
@@ -139,7 +137,7 @@ export default class Contract {
             callback(error, result);
         });
         
-        alert("Check!");
+        //alert("Check!");
     }
 
     async activateRegisteredAirline(prizePaid, callback){
@@ -174,6 +172,8 @@ export default class Contract {
         });
     }
 
+    //passengerRepayment()-function is automatically executed by oracle, in case the flight is too late (error-code = 20)
+
     async passengerWithdrawal(flight, addressAirline, timestamp, callback){
         let self = this;
         console.log(flight);
@@ -190,7 +190,7 @@ export default class Contract {
     async getPassengerPaidAmount(flight, timestamp, addressAirline, callback){
         let self = this;
         let currentAddress = await ethereum.request({method: 'eth_accounts'});
-        self.flightSuretyApp.methods.getPassengerPaidAmount(flight, timestamp, addressAirline).call({from: currentAddress[0], callback})
+        self.flightSuretyApp.methods.getPassengerPaidAmount(flight, timestamp, addressAirline).call({from: currentAddress[0]}, callback)
     }
 
 }

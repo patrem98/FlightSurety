@@ -210,7 +210,7 @@ contract FlightSuretyData {
     /**
     * @dev Gets specific element / address from airlines mapping!
     */    
-    function getAirlines() external view requireIsOperational returns(address[] memory) {
+    function getAirlines() public requireIsOperational returns(address[] memory) {
         return airlineAccts;
     }
 
@@ -272,7 +272,7 @@ contract FlightSuretyData {
 
         airlines[addressAirline] = Airline({
             isRegistered: true,
-            isActive: false,
+            isActive: true,
             addressAirline: addressAirline,
             airlineName: "First Airline",
             fund: amountPaid

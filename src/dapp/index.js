@@ -22,12 +22,18 @@ import './flightsurety.css';
 
         //Fetching Flight Status
         DOM.elid('get-status').addEventListener('click', () => {
-            let addressAirline = DOM.elid('address-airline').value;
-            let flight = DOM.elid('flight').value;
-            let timestamp = DOM.elid('timestamp').value;
+            let addressAirline = DOM.elid('address-airline2').value;
+            let flight = DOM.elid('flight2').value;
             // Write transaction
-            contract.fetchFlightStatus(addressAirline, flight, timestamp, (error, result) => {
-                display('Oracles', 'Trigger oracles', [ { label: 'Fetch Flight Status', error: error, value: result.flight + ' ' + result.timestamp} ]);
+            /*contract.fetchFlightStatus(addressAirline, flight, (error, result) => {
+                display('Oracles', 'Trigger oracles', [ { label: 'Fetch Flight Status', error: error, value: result.flight + ' submitted to oracle at:' + result.timestamp } ]);
+            });*/
+
+            contract.fetchFlightStatus(addressAirline, flight, (flight, status, timestamp) => {
+                console.log(flight);
+                console.log(status);
+                console.log(timestamp);
+                display('Oracles', 'Oracles response', [ { label: 'Flight Status', value: '\n | Flight:' + flight + '\n | Time:' + timestamp + '\n | Status:' + status }]);
             });
         });
 
@@ -69,19 +75,20 @@ import './flightsurety.css';
         DOM.elid('get-airlines').addEventListener('click', () => {
             contract.getAirlines((error, result) => {
                 console.log(error,result);
-              //display('Already registered Airlines:', [ { label: 'Already registered Airlines:', error: error, value: result[1]} ]);
-                alert(result);
+            display('Airlines:', [ { label: 'Already registered Airlines:', error: error, value: result} ]);
             });
         })
 
         //++++++++++++++++++ Passenger-related functions +++++++++++++++++++++++++++
 
         //Purchasing insurance
-        DOM.elid('buying-insurance').addEventListener('click', () => {
-            let prizePaid = DOM.elid('buy').value;
-            let flight = DOM.elid('flight').value;
-            let addressAirline = DOM.elid('address-airline').value;
-            let timestamp = DOM.elid('timestamp').value;
+        DOM.elid('buy').addEventListener('click', () => {
+            let prizePaid = DOM.elid('buying-insurance').value;
+            let flight = DOM.elid('flight3').value;
+            let addressAirline = DOM.elid('address-airline3').value;
+            let timestamp = DOM.elid('timestamp3').value;
+
+            console.log(prizePaid, flight, addressAirline, timestamp);
 
             //Write transaction
             contract.passengerPayment(flight, addressAirline, timestamp, prizePaid, (error, result) => {
@@ -94,9 +101,9 @@ import './flightsurety.css';
         /*passengerRepayment()-function must be called before passenger withdrawal by the 
         respective airline (via cli, no front-end implemented (yet))*/
         DOM.elid('withdraw-refund').addEventListener('click', () => {
-            let flight = DOM.elid('flight').value;
-            let addressAirline = DOM.elid('address-airline').value;
-            let timestamp = DOM.elid('timestamp').value;
+            let flight = DOM.elid('flight4').value;
+            let addressAirline = DOM.elid('address-airline4').value;
+            let timestamp = DOM.elid('timestamp4').value;
 
             //Write transaction
             contract.passengerWithdrawal(flight, addressAirline, timestamp, prizePaid, (error, result) => {
