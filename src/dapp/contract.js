@@ -82,13 +82,13 @@ export default class Contract {
 
     //processFlightStatus() --> Done implicitly in submitOracleResponse()-function (see FlightSuretyApp.sol)
     
-    async fetchFlightStatus(addressAirline, flight, callback) {
+    async fetchFlightStatus(addressAirline, flight, timestamp, callback) {
         let self = this;
         let currentAddress = await ethereum.request({method: 'eth_accounts'});
         let payload = {
             airline: addressAirline,
             flight: flight,
-            timestamp: Math.floor(Date.now() / 1000)
+            timestamp: timestamp
         }
 
             alert('Requesting flight status from oracles - please wait!');
@@ -180,8 +180,8 @@ export default class Contract {
         console.log(addressAirline);
         console.log(timestamp);
 
-        let currentAddress = await ethereum.request({method: 'eht_accounts'});
-        self.flightSuretyApp.methods.passengerWithdrawal(flight, addressAirline, timestamp, currentAddress[0]).send((error, result) => {
+        let currentAddress = await ethereum.request({method: 'eth_accounts'});
+        self.flightSuretyApp.methods.passengerWithdrawal(flight, addressAirline, timestamp, currentAddress[0]).send({from: currentAddress[0]}, (error, result) => {
             console.log(error, result);
             callback(error, result);
         });

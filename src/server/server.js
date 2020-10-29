@@ -68,16 +68,15 @@ flightSuretyApp.events.OracleRequest({})
     let index = event.returnValues.index;
     let airline = event.returnValues.airline;
     let flight = event.returnValues.flight;
-    let timestamp = event.returnValues.timestamp;
+    let timestamp = event.returnValues.timestamp; //Passenger has to input the date in the right way (see README on Github)!
 
     //Checking status of flight
     let status = STATUS[0]; //default status code!
-    let time = (timestamp * 1000); //JS counts in ms, Solidity counts in s!
 
     //Defining status code (only simulation, in production these would (or could) be varying!)
-    if(time < Date.now()){
+    if(timestamp < Date.now()){
       status = STATUS[2].code;
-      //console.log(status);
+      console.log(Date.now());
     }
 
      //Identifying all oracles with matching indices

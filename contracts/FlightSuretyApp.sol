@@ -124,7 +124,7 @@ contract FlightSuretyApp {
     */
     modifier paidEnough()
     {
-        require(msg.value >= 1 ether, "The amount to be paid for a flight insurance is only up to 1 Ether (ETH)!");
+        require(msg.value <= 1 ether, "The amount to be paid for a flight insurance is only up to 1 Ether (ETH)!");
         require(msg.value > 0 ether, "An amount of 0 ETH is not valid!");
 
         _;
@@ -251,7 +251,6 @@ contract FlightSuretyApp {
                                     requireIsOperational
                                     rateLimit(payoutLimit)
                                     paidEnough
-                                    AirlineIsActive
     {
         //emit InsurancePaid(msg.value, msg.sender, flight, timestamp);
         //require(flightSuretyData.IsAirlineActive(addressAirline), "Inputted address does not belong to an active Airline!");

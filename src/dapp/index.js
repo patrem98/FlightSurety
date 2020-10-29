@@ -24,12 +24,8 @@ import './flightsurety.css';
         DOM.elid('get-status').addEventListener('click', () => {
             let addressAirline = DOM.elid('address-airline2').value;
             let flight = DOM.elid('flight2').value;
-            // Write transaction
-            /*contract.fetchFlightStatus(addressAirline, flight, (error, result) => {
-                display('Oracles', 'Trigger oracles', [ { label: 'Fetch Flight Status', error: error, value: result.flight + ' submitted to oracle at:' + result.timestamp } ]);
-            });*/
-
-            contract.fetchFlightStatus(addressAirline, flight, (flight, status, timestamp) => {
+            let timestamp = DOM.elid('timestamp2').value;
+            contract.fetchFlightStatus(addressAirline, flight, timestamp, (flight, status, timestamp) => {
                 console.log(flight);
                 console.log(status);
                 console.log(timestamp);
@@ -75,7 +71,7 @@ import './flightsurety.css';
         DOM.elid('get-airlines').addEventListener('click', () => {
             contract.getAirlines((error, result) => {
                 console.log(error,result);
-            display('Airlines:', [ { label: 'Already registered Airlines:', error: error, value: result} ]);
+                display('Airlines:', [ { label: 'Already registered Airlines:', error: error, value: result} ]);
             });
         })
 
@@ -100,15 +96,15 @@ import './flightsurety.css';
         //Withdraw refund
         /*passengerRepayment()-function must be called before passenger withdrawal by the 
         respective airline (via cli, no front-end implemented (yet))*/
-        DOM.elid('withdraw-refund').addEventListener('click', () => {
+        DOM.elid('withdraw').addEventListener('click', () => {
             let flight = DOM.elid('flight4').value;
             let addressAirline = DOM.elid('address-airline4').value;
             let timestamp = DOM.elid('timestamp4').value;
 
             //Write transaction
-            contract.passengerWithdrawal(flight, addressAirline, timestamp, prizePaid, (error, result) => {
+            contract.passengerWithdrawal(flight, addressAirline, timestamp, (error, result) => {
                 console.log(error, result);
-                alert("Insurance paid!");
+                alert("Refund withdrawn!");
             });
         })
 
