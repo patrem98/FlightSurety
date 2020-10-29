@@ -373,8 +373,6 @@ contract FlightSuretyApp {
                 }
 
             }
-            //return (success, 0);
-            //flightSuretyData.registerAirline(addressAirline, nameAirline);
     }
 
     /**
@@ -401,10 +399,6 @@ contract FlightSuretyApp {
         require(msg.value == 10 ether, "The amount must be equal to 10 ether (ETH)!");
 
         flightSuretyData.fund(msg.sender, msg.value);
-        //flightSuretyData.fund.value(msg.value)(msg.sender);
-
-        //transfer actual funds to data contract address (if not, data contract will not be able to transfer funds to respective address)!
-        //flightSuretyDataAddress.transfer(amountFund);
         
         flightSuretyData.activateAirline(msg.sender, msg.value);
 
@@ -427,7 +421,7 @@ contract FlightSuretyApp {
         //require(flightSuretyData.IsAirlineActive(msg.sender), "Airline is not active - please pay the requested amount!");
         bytes32 flightkey = getFlightKey(msg.sender, flight, timestamp);
 
-        //flights[flightkey].timestamp = timestamp;
+        lights[flightkey].timestamp = timestamp;
         flights[flightkey].flight = flight;
         flights[flightkey].airline = msg.sender;
 

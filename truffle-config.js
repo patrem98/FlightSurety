@@ -10,7 +10,7 @@ module.exports = {
    development: {
      host: "127.0.0.1",
      port: 8545,
-     gas: 4612388,
+     //gas: 4612388,
      /*accounts: 50, If this does not amount of test account to 50, 
                     explicitly use ganache-cli by typing "ganache-cli -l 9999999999999 -g 1 -a 50 -e 10000". 
                     -a 50 specifies number of accounts! --> Relevant, because 20 oracles are used and need
