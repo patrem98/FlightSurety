@@ -48,9 +48,11 @@ The section "Register & Output Flights" is designed for both airlines and passen
 
 The section "Buying Insurance" and "Withdrawing Refund" are designed for passengers wanting to buy an insurance for a specific flight, wanting to know how much they paid for an insurance in the first place and (if a particular flight is delayed, due to the airline's fault) wanting to withdraw their refund (refund is received as ether in metamask-wallet).
 
-Some important notes:
+**Some important notes:**
 * Flights can only be registered by the respective airline (that's why no additional box for inputting the airline address is provided in the front-end)
 * The time of the flights has to inputted (both for registration and for demanding the flight-status) in the following format: Milliseconds elapsed since January 1, 1970 00:00:00 UTC. This is of course not an ideal solution, but should suffice for a simplified comparison of actual time (when passenger demands flight status) and time inputted by airline when registering the flight.
+* The Flight registration & refund process is taking place in the following order: First the flight is registered by the airline (flight-number and timestamp inputted). After flight registration the passenger is able to buy an insurance up to 1 Ether for the registered flight, timestamp and airline. The passenger is now able to verify the status of the flight, by inputting the airline address, original timestamp of flight and flight-number. The oracle will provide the status, and if the latter equals 20 (flight delayed - due to airline fault), the refund amount is directly changed in the data-structure of the passenger. As last step, the passenger is now able to withdraw his refund amount by again typing in flight-number, original. timestamp and airline address and clicking on withdraw funds. ATTENTION: The passenger will not receive any refund if he checks the flight status first (getFlightStatus) and buys the insurance after that (BuyInsurance), even if the flight is delayed (status = 20)!
+* In order to let the oracle request properly work, it is advised to reload the page between every oracle call (=getFlightStatus)!
 
 
 ## Resources
