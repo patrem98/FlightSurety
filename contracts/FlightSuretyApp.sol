@@ -340,7 +340,7 @@ contract FlightSuretyApp {
     */   
     function registerAirline
                             (   
-                                address addressAirline,
+                                address payable addressAirline,
                                 string calldata nameAirline 
                             )
                             external
@@ -618,8 +618,6 @@ contract FlightSuretyApp {
                         }
                 }
 
-
-
                 //emit FlightStatusInfo(airline, flight, timestamp, statusCodeMax);
                 emit OracleReport(airline, flight, timestamp, statusCodeMax);
                 //In case the majority of oracles respond with a statusCode = 20 (flight delay due to airline's fault), the insuree is automatically refunded!
@@ -706,7 +704,7 @@ contract FlightSuretyApp {
 
 interface FlightSuretyData {
     function registerFirstAirline(address payable addressAirline, uint256 amounPaid) external payable;
-    function registerAirline(address addressAirline, string calldata nameAirline) external;
+    function registerAirline(address payable addressAirline, string calldata nameAirline) external;
     function activateAirline(address payable addressAirline, uint256 amountPaid) external;
     function IsAirlineActive(address addressAirline) external view returns(bool);
     function IsAirlineRegistered (address addressAirline) external view returns(bool);

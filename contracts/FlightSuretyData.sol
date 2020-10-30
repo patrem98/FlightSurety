@@ -22,7 +22,7 @@ contract FlightSuretyData {
 
     address payable contractOwner;                                      // Account used to deploy contract
     bool private operational = true;                                    // Blocks all state changes throughout the contract if false
-    mapping(address => Airline) private airlines;                               // Mapping for storing user profiles
+    mapping(address => Airline) public airlines;                        // Mapping for storing user profiles
     address[] public airlineAccts = new address[](0); 
 
     address payable fundAddress;
@@ -301,18 +301,25 @@ contract FlightSuretyData {
                                 string calldata nameAirline
                             )
                             external
+                            payable
+                            //public
                             //requireMultiPartyConsensus(mode) 
                             isCallerAuthorized
                             //requireIsAirline
                             //requireIsOperational
     {
-        airlines[addressAirline] = Airline({
+        
+        airlines[addressAirline].isRegistered = true;
+        airlines[addressAirline].addressAirline = addressAirline;
+        airlines[addressAirline].airlineName = nameAirline;
+
+        /*airlines[addressAirline] = Airline({
             isRegistered: true,
             isActive: false,
             addressAirline: addressAirline,
             airlineName: nameAirline,
             fund: 0
-        });
+        });*/
 
         airlineAccts.push(addressAirline);
     }

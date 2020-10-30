@@ -139,12 +139,14 @@ export default class Contract {
         console.log(nameAirline);
         
         self.flightSuretyApp.methods
-        .registerAirline(addressAirline, nameAirline)
-        .send({from: currentAddress[0]}, (error, result) => {
-            console.log(error, result);
-            callback(error, result);
-        });
-        
+        .registerAirline(addressAirline, nameAirline).send(
+        {from: currentAddress[0],
+         gasPrice: '100000000000',
+         gas: '4712388'}, 
+         (error, result) => {
+               console.log(error, result);
+               callback(error, result);
+         });
         //alert("Check!");
     }
 

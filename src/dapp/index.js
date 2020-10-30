@@ -71,7 +71,8 @@ import './flightsurety.css';
         DOM.elid('get-airlines').addEventListener('click', () => {
             contract.getAirlines((error, result) => {
                 console.log(error,result);
-                display('Airlines:', [ { label: 'Already registered Airlines:', error: error, value: result} ]);
+                //display('Airlines:', [ { label: 'Already registered Airlines:', error: error, value: result} ]);
+                alert(`Following airline addresses are already registered: ${result}`);
             });
         })
 
@@ -110,7 +111,11 @@ import './flightsurety.css';
 
         //Getting insurance paid by passenger
         DOM.elid('get-insurance').addEventListener('click', () => {
-            contract.getPassengerPaidAmount((error, result) => {
+            let flight = DOM.elid('flight5').value;
+            let addressAirline = DOM.elid('address-airline5').value;
+            let timestamp = DOM.elid('timestamp5').value;
+
+            contract.getPassengerPaidAmount(flight, timestamp, addressAirline, (error, result) => {
                 console.log(error,result);
                 //display('Already registered Airlines:', [ { label: 'Already registered Airlines:', error: error, value: result[1]} ]);
                 alert(result);
