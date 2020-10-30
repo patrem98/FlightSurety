@@ -20,14 +20,13 @@ let STATUS = [{
   'label': 'STATUS_CODE_LATE_OTHER', 'code': 50}];
 
   let oracles = [];
-  //let matchingOracles = [];
+  let matchingOracles = [];
 
 //Register oracles
 async function registerOracles(){
 
   let fee = await flightSuretyApp.methods.REGISTRATION_FEE().call();
   let accounts = await web3.eth.getAccounts();
-  //console.log(accounts);
 
   for(let i = 0; i < 20; i++){
     console.log(accounts[i]);
@@ -49,7 +48,6 @@ async function registerOracles(){
 (async() => {
 
  let oracles = await registerOracles();
- //console.log(oracles);
 
 })();
 //Submit oracle responses, when flight status request is emitted
@@ -62,7 +60,6 @@ async function registerOracles(){
 flightSuretyApp.events.OracleRequest({})
 .on('data', async function(event){
         console.log(event.returnValues);
-        //console.log(oracles);
  
     //Store return values of emitted event during execution of "fetchtflightStatus()"-function
     let index = event.returnValues.index;
@@ -79,89 +76,32 @@ flightSuretyApp.events.OracleRequest({})
       console.log(Date.now());
     }
 
-     //Identifying all oracles with matching indices
+    //Creating reference for number of "randomly selected" oracles for status submission (see App-contract, submitOracleResponse)
+    for(let i = 0; i < oracles.length; i++){
+      if((oracles[i].index[0] == index) || (oracles[i].index[1] == index) || (oracles[i].index[2] == index)){
+        matchingOracles.push(oracles[i]);
+      }
+    }
+    let matchingOraclesLength = matchingOracles.length;
+    console.log(matchingOracles.length);
+    //Identifying all oracles with matching indices
      for(let k = 0; k < oracles.length; k++){
       if((oracles[k].index[0] == index) || (oracles[k].index[1] == index) || (oracles[k].index[2] == index)){
     
         await flightSuretyApp.methods
-        .submitOracleResponse(index, airline, flight, timestamp, status)
-        .send({from: oracles[k].accounts});
-        //console.log(index, airline, timestamp, flight, status, oracles[k].accounts);
-
+        .submitOracleResponse(index, airline, flight, timestamp, status, matchingOraclesLength)
+        .send({from: oracles[k].accounts,
+          gasPrice: '100000000000',
+          gas: '4712388'});
       }
+
+    //Resetting array for next cycle
+    matchingOracles = [];
+
     }
-
-    /*let check = await flightSuretyApp.methods
-        .submitOracleResponse(index, airline, flight, timestamp, status)
-        .send({from: oracles[1].accounts});
-    console.log(check.returnValues);
-    console.log(index, airline, timestamp, flight, status, oracles[1].accounts);*/
-
-    /*//Identifying all oracles with matching indices
-    for(let k = 0; k < oracles.length; k++){
-      if((oracles[k].index[0] == index) || (oracles[k].index[1] == index) || (oracles[k].index[2] == index)){
-        matchingOracles.push(oracles[k]);
-      }
-    }
-    console.log(matchingOracles);
-    
-    //Iterate through all oracle responses (only oracles with matching index are considered) and get majority response
-    for(let j = 0; j < matchingOracles.length; j++){
-
-      await flightSuretyApp.methods
-      .submitOracleResponse(index, airline, flight, timestamp, status)
-      .send({from: matchingOracles[j].accounts});
-
-    }*/
   
 }).on('error', console.error);
   
-
-/*flightSuretyApp.events.OracleRequest({
-  fromBlock: 'latest'
-}, async function (error, event){
-
-  if(error){
-    console.log(error);
-  }
-  //console.log('Caught an event: '+event);
-  //console.log(oracles);
-  //console.log(matchingOracles);
-
-  //Store return values of emitted event during execution of "fetchtflightStatus()"-function
-  let index = event.returnValues.index;
-  let airline = event.returnValues.airline;
-  let flight = event.returnValues.flight;
-  let timestamp = event.returnValues.timestamp;
-
-  //Checking status of flight
-  let status = STATUS[0]; //default status code!
-  let time = (timestamp * 1000); //JS counts in ms, Solidity counts in s!
-
-  //Defining status code
-  if(time < Date.now()){
-    status = STATUS[2].code;
-    console.log(status);
-  }
-
-  //Identifying all oracles with matching indices
-  oracles.forEach(oracle => {
-    if((oracle.indexes[0] == index) || (oracle.indexes[1] == index) || (oracle.indexes[2] == index)){
-      matchingOracles.push(oracle);
-    }
-  });
-  console.log(matchingOracles);
-
-  //Iterate through all oracle responses (only oracles with matching index are considered) and get majority response
-  for(let j = 0; j < matchingOracles.length; j++){
-
-    await flightSuretyApp.methods
-    .submitOracleResponse(index, airline, flight, timestamp, status)
-    .send({from: matchingOracles[j]});
-
-  }*/
-//});
-
 const app = express();
 app.get('/api', (req, res) => {
     res.send({

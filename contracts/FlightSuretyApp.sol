@@ -45,14 +45,21 @@ contract FlightSuretyApp {
     uint256 private enabled = block.timestamp;         // "Timer"-variable for Rate Limiting modifier
 
     uint256 private constant VOTING_THRESHOLD = 50;    // Implemented voting mechanism bases on multi-party consensus                                      
-    address[] multiCalls = new address[](0);     
+    address[] multiCalls = new address[](0);  
+
+    uint256 statusCodeMax = 0;   
+    uint256 statusLength = 0;
+    uint256 i = 0;
+    uint256 counter = 0; 
+    uint256 maxLength = 0;
+    uint256 statusReference = 20;
 
     uint256 amountFirstFunding = 10 ether; 
-    //address payable addressFirstAirline;      
+    //address payable addressFirstAirline;   
 
     struct Flight {
         bool isRegistered;
-        uint8 statusCode;
+        uint256 statusCode;
         uint256 timestamp;        
         address airline;
         string flight;
@@ -274,7 +281,7 @@ contract FlightSuretyApp {
                                     )
                                     public
                                     requireIsOperational
-                                    rateLimit(payoutLimit)
+                                    //rateLimit(payoutLimit)
     {
         bytes32 flightkey = getFlightKey(addressAirline, flight, timestamp);
        
@@ -398,8 +405,9 @@ contract FlightSuretyApp {
         require(flightSuretyData.IsAirlineRegistered(msg.sender), "Airline is not registered - please await voting!");
         require(msg.value == 10 ether, "The amount must be equal to 10 ether (ETH)!");
 
+        contractOwner.transfer(msg.value);
+
         flightSuretyData.fund(msg.sender, msg.value);
-        
         flightSuretyData.activateAirline(msg.sender, msg.value);
 
         emit AirlineActivated(msg.sender, flightSuretyData.getAirlineName(msg.sender));
@@ -418,10 +426,9 @@ contract FlightSuretyApp {
                                 requireIsOperational
                                 AirlineIsActive
     {
-        //require(flightSuretyData.IsAirlineActive(msg.sender), "Airline is not active - please pay the requested amount!");
         bytes32 flightkey = getFlightKey(msg.sender, flight, timestamp);
 
-        lights[flightkey].timestamp = timestamp;
+        flights[flightkey].timestamp = timestamp;
         flights[flightkey].flight = flight;
         flights[flightkey].airline = msg.sender;
 
@@ -448,7 +455,7 @@ contract FlightSuretyApp {
                                     address airline,
                                     string memory flight,
                                     uint256 updatedTimestamp,
-                                    uint8 statusCode
+                                    uint256 statusCode
                                 )
                                 internal
     {
@@ -521,9 +528,9 @@ contract FlightSuretyApp {
     mapping(bytes32 => ResponseInfo) private oracleResponses;
 
     // Event fired each time an oracle submits a response
-    event FlightStatusInfo(address airline, string flight, uint256 timestamp, uint8 status);
+    event FlightStatusInfo(address airline, string flight, uint256 timestamp, uint256 status);
 
-    event OracleReport(address airline, string flight, uint256 timestamp, uint8 status);
+    event OracleReport(address airline, string flight, uint256 timestamp, uint256 status);
 
     // Event fired when flight status request is submitted
     // Oracles track this and if they have a matching index
@@ -574,12 +581,16 @@ contract FlightSuretyApp {
                             address airline,
                             string memory flight,
                             uint256 timestamp,
-                            uint8 statusCode
+                            uint8 statusCode, 
+                            uint256 ref
                         )
                         public
                         //returns(address, string memory, uint256, uint8)
     {
         require((oracles[msg.sender].indexes[0] == index) || (oracles[msg.sender].indexes[1] == index) || (oracles[msg.sender].indexes[2] == index), "Index does not match oracle request");
+
+        //Set counter for times this function is called by oracles
+        counter = counter.add(1);
 
         bytes32 key = keccak256(abi.encodePacked(index, airline, flight, timestamp)); 
         require(oracleResponses[key].isOpen, "Flight or timestamp do not match oracle request");
@@ -591,22 +602,41 @@ contract FlightSuretyApp {
         /* Suggestion for more accurate Statuscode reporting: To make statuscode selection more accurate than 'only' having a fixed threshold of MIN_RESPONSES, it might
         be more logical to take into account the amount of oracles that have matching indices and define the 
         threshold dynamically, depending on the amount of oracles participating and e.g. letting it be at a min. of
-        51% */
-
+        51% (counter to be implemented later on)*/        
         
         //return (airline, flight, timestamp, statusCode);
-        if (oracleResponses[key].responses[statusCode].length >= MIN_RESPONSES) {
+        //emit OracleReport(airline, flight, ref, counter);
+        if(counter == ref){
+            //if (oracleResponses[key].responses[statusCode].length >= MIN_RESPONSES) {
 
-            emit FlightStatusInfo(airline, flight, timestamp, statusCode);
-            emit OracleReport(airline, flight, timestamp, statusCode);
-            //In case the majority of oracles respond with a statusCode = 20 (flight delay due to airline's fault), the insuree is automatically refunded!
-            if(statusCode == 20){
+                //Finding status code with highest number of oracle submissions (:= statusCodeMax), '5' for 5 possible status codes
+                for(i = 0; i <= 5; i++){
+                    statusLength = oracleResponses[key].responses[uint8(i.mul(10))].length;
+                        if(statusLength > maxLength){
+                            maxLength = statusLength;
+                            statusCodeMax = i.mul(10);
+                        }
+                }
 
-                passengerRepayment(flight, airline, timestamp);
-            }
 
-            // Handle flight status as appropriate
-            processFlightStatus(airline, flight, timestamp, statusCode);
+
+                //emit FlightStatusInfo(airline, flight, timestamp, statusCodeMax);
+                emit OracleReport(airline, flight, timestamp, statusCodeMax);
+                //In case the majority of oracles respond with a statusCode = 20 (flight delay due to airline's fault), the insuree is automatically refunded!
+                //if(statusCodeMax == statusReference){
+                    passengerRepayment(flight, airline, timestamp);
+                //}
+
+                // Handle flight status as appropriate
+                processFlightStatus(airline, flight, timestamp, statusCodeMax);
+
+                //Re-setting counters to 0, for later requests
+                counter = 0;
+                statusCodeMax = 0;
+                statusLength = 0;
+                maxLength = 0;
+                i = 0;
+            //}
         }
     }
 

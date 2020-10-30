@@ -210,7 +210,7 @@ contract FlightSuretyData {
     /**
     * @dev Gets specific element / address from airlines mapping!
     */    
-    function getAirlines() public requireIsOperational returns(address[] memory) {
+    function getAirlines() external view requireIsOperational returns(address[] memory) {
         return airlineAccts;
     }
 
@@ -427,7 +427,7 @@ contract FlightSuretyData {
         emit EtherDataContract(address(this).balance, refundAmount);
 
         require(address(this).balance >= refundAmount, "Data contract has not enough ether!");
-
+        
         //transfer from data contract to given address
         addressInsuree.transfer(refundAmount);
     }
@@ -451,12 +451,12 @@ contract FlightSuretyData {
     */
     fallback() external payable
     {
-        contractOwner.transfer(msg.value);
+        //contractOwner.transfer(msg.value);
     }
 
     receive() external payable
     {
-        contractOwner.transfer(msg.value);
+        //contractOwner.transfer(msg.value);
     }
 }
 

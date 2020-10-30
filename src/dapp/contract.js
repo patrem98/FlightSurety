@@ -5,15 +5,19 @@ import Web3 from 'web3';
 //import express from 'express';
 import "babel-polyfill";
 
-/*const Web3 = require("web3");
-const ethEnabled = () => {
+
+/*const ethEnabled = () => {
   if (window.ethereum) {
     window.Web3 = new Web3(window.ethereum);
     window.ethereum.enable();
     return true;
   }
   return false;
-}*/
+}
+
+if (!ethEnabled()) {
+    alert("Please install an Ethereum-compatible browser or extension like MetaMask to use this dApp!");
+  }*/
 
 //contract module API (pre-injecting contract ABI (?))
 export default class Contract {
@@ -22,6 +26,8 @@ export default class Contract {
         let config = Config[network];
         //this.web3 = new Web3(new Web3.providers.HttpProvider(config.url));
         this.web3 = new Web3(new Web3.providers.WebsocketProvider(config.url.replace('http', 'ws')));
+        window.Web3 = new Web3(window.ethereum);
+        window.ethereum.enable();
         //this.web3 = new Web3(new Web3.providers.IpcProvider(config.url));
         this.flightSuretyApp = new this.web3.eth.Contract(FlightSuretyApp.abi, config.appAddress, config.dataAddress);
         this.flightSuretyData = new this.web3.eth.Contract(FlightSuretyData.abi, config.dataAddress);
@@ -70,14 +76,16 @@ export default class Contract {
 
         console.log(flight);
         console.log(timestamp);
-        //console.log(currentAddress[0]);
 
         let currentAddress = await ethereum.request({method: 'eth_accounts'});
-        self.flightSuretyApp.methods.registerFlight(flight, timestamp).send({from: currentAddress[0]}, (error, result) => {
+        self.flightSuretyApp.methods.registerFlight(flight, timestamp).send(
+            {from: currentAddress[0],
+             gasPrice: '100000000000',
+             gas: '4712388'
+            }, (error, result) => {
             console.log(error, result);
             callback(error, result);
         });
-
     } 
 
     //processFlightStatus() --> Done implicitly in submitOracleResponse()-function (see FlightSuretyApp.sol)
@@ -144,7 +152,10 @@ export default class Contract {
         let self = this;
         console.log(prizePaid)
         let currentAddress = await ethereum.request({ method: 'eth_accounts' });
-        self.flightSuretyApp.methods.activateRegisteredAirline().send({from: currentAddress[0], value: self.web3.utils.toWei(prizePaid, 'ether')}, (error, result) => {
+        self.flightSuretyApp.methods.activateRegisteredAirline().send(
+            {from: currentAddress[0], 
+             value: self.web3.utils.toWei(prizePaid, 'ether')
+            }, (error, result) => {
             console.log(error,result);
             callback(error, result);
         });
